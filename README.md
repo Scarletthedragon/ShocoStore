@@ -1,6 +1,6 @@
 # ShocoStore
 
-ShocoStore ir online veikals, kas specializējas šokolādes produktu pārdošanā.
+"ShocoStore" ir interneta veikals kuru projekta laikā līdz novembrim īstenos RVT kursa DP4-4 studenti- Roberts Dāvidsons, Sanija Kraukle, Sanita Savicka un Šarlote Tērmane. Interneta veikalā būs iespējams apskatīt un iegādāties visādus šokolādes produktus.
 
 ## Funkcionalitāte
 
