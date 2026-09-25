@@ -57,4 +57,4 @@ Projektā tiek izmantota MySQL datubāze.
 
 ## Projekta mērķis
 
-Izveidot vienkāršu un pārskatāmu online šokolādes veikalu ar ērtu produktu meklēšanu, filtrēšanu un pasūtījumu veikšanu.
+Izveidot vienkāršu un pārskatāmu online šokolādes veikalu ar ērtu produktu meklēšanu, filtrēšanu un pasūtījumu veikšanu. 
