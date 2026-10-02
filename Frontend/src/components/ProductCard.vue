@@ -3,7 +3,7 @@ defineProps({
   name: String,
   description: String,
   price: Number,
-  image: String,
+  tone: String,
   tag: String
 })
 </script>
@@ -12,10 +12,11 @@ defineProps({
   <article class="product-card">
 
     <div class="product-image">
-      <img
-        :src="image"
-        :alt="name"
-      >
+      <div class="product-pack" :class="`product-pack--${tone}`" role="img" :aria-label="name">
+        <span class="product-pack__brand">SHOCO</span>
+        <strong>67</strong>
+        <span class="product-pack__name">{{ name }}</span>
+      </div>
     </div>
 
     <span class="tag">

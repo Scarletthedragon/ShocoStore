@@ -6,7 +6,7 @@ const products = [
     name: 'Strawberry Energy',
     description: 'Šokolāde ar zemeņu garšu',
     price: 4.99,
-    image: '/src/assets/images/product1.png',
+    tone: 'berry',
     tag: 'JAUNUMS'
   },
 
@@ -14,7 +14,7 @@ const products = [
     name: 'Banana Energy',
     description: 'Šokolāde ar banānu garšu',
     price: 4.99,
-    image: '/src/assets/images/product2.png',
+    tone: 'banana',
     tag: 'POPULĀRĀKAIS'
   },
 
@@ -22,7 +22,7 @@ const products = [
     name: 'Mango Energy',
     description: 'Šokolāde ar mango garšu',
     price: 5.49,
-    image: '/src/assets/images/product3.png',
+    tone: 'mango',
     tag: 'LIMITĒTS'
   }
 ]
@@ -60,7 +60,7 @@ const products = [
         :name="product.name"
         :description="product.description"
         :price="product.price"
-        :image="product.image"
+        :tone="product.tone"
         :tag="product.tag"
       />
 

@@ -32,10 +32,11 @@ import ProductGrid from './components/ProductGrid.vue'
           </div>
 
           <div class="hero-image">
-            <img
-              src="./assets/images/hero.png"
-              alt="Shoco šokolāde"
-            >
+            <div class="hero-package" role="img" aria-label="Shoco šokolāde">
+              <span>SHOCO</span>
+              <strong>67</strong>
+              <span>ENERGY CHOCOLATE</span>
+            </div>
           </div>
 
         </div>
