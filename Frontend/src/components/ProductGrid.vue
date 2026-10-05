@@ -1,31 +1,29 @@
 <script setup>
+import { onMounted, ref } from 'vue'
 import ProductCard from './ProductCard.vue'
+import { getProducts, saveOrder } from '../api/store.js'
 
-const products = [
-  {
-    name: 'Strawberry Energy',
-    description: 'Šokolāde ar zemeņu garšu',
-    price: 4.99,
-    tone: 'berry',
-    tag: 'JAUNUMS'
-  },
+const products = ref([])
+const message = ref('')
 
-  {
-    name: 'Banana Energy',
-    description: 'Šokolāde ar banānu garšu',
-    price: 4.99,
-    tone: 'banana',
-    tag: 'POPULĀRĀKAIS'
-  },
-
-  {
-    name: 'Mango Energy',
-    description: 'Šokolāde ar mango garšu',
-    price: 5.49,
-    tone: 'mango',
-    tag: 'LIMITĒTS'
+onMounted(async () => {
+  try {
+    products.value = await getProducts()
+  } catch (error) {
+    message.value = error.message
   }
-]
+})
+
+async function placeOrder(productId) {
+  try {
+    const order = await saveOrder({ productId, quantity: 1, customerName: 'Guest' })
+    const product = products.value.find((item) => item.id === productId)
+    if (product) product.stock -= 1
+    message.value = `Pasūtījums saglabāts: €${order.total.toFixed(2)}`
+  } catch (error) {
+    message.value = error.message
+  }
+}
 </script>
 
 <template>
@@ -56,15 +54,18 @@ const products = [
 
       <ProductCard
         v-for="product in products"
-        :key="product.name"
+        :key="product.id"
+        :id="product.id"
         :name="product.name"
         :description="product.description"
         :price="product.price"
         :tone="product.tone"
         :tag="product.tag"
+        @add-to-cart="placeOrder"
       />
 
     </div>
+    <p v-if="message" role="status">{{ message }}</p>
 
   </section>
 </template>

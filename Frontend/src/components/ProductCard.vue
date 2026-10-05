@@ -1,11 +1,14 @@
 <script setup>
 defineProps({
+  id: String,
   name: String,
   description: String,
   price: Number,
   tone: String,
   tag: String
 })
+
+defineEmits(['add-to-cart'])
 </script>
 
 <template>
@@ -36,7 +39,7 @@ defineProps({
         €{{ price.toFixed(2) }}
       </strong>
 
-      <button>
+      <button type="button" :aria-label="`Pasūtīt ${name}`" @click="$emit('add-to-cart', id)">
         +
       </button>
     </div>

@@ -1,6 +1,7 @@
 <script setup>
 import Navbar from './components/Navbar.vue'
 import ProductGrid from './components/ProductGrid.vue'
+import ProductManager from './components/ProductManager.vue'
 </script>
 
 <template>
@@ -43,6 +44,7 @@ import ProductGrid from './components/ProductGrid.vue'
       </section>
 
       <ProductGrid />
+      <ProductManager />
     </main>
   </div>
 </template>

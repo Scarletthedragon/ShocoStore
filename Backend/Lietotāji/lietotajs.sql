@@ -7,7 +7,7 @@ USE `ShocoStore`;
 
 -- Lietotāju konti. Parolē glabā paroles jaucējvērtību, nevis atklātu paroli.
 CREATE TABLE IF NOT EXISTS `Lietotajs` (
-  `Lietotajs_ID` INT NOT NULL AUTO_INCREMENT COMMENT 'Unikāls lietotāja identifikators',
+  `Lietotajs_ID` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unikāls lietotāja identifikators',
   `Vards` VARCHAR(100) NOT NULL COMMENT 'Lietotāja vārds',
   `Epasts` VARCHAR(255) NOT NULL COMMENT 'Lietotāja e-pasta adrese',
   `Parole` VARCHAR(255) NOT NULL COMMENT 'Paroles jaucējvērtība',

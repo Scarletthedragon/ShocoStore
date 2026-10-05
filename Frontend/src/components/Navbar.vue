@@ -2,7 +2,7 @@
 import logo from '../assets/images/choco.png'
 </script>
 <template>
-   <header class="navbar">
+  <header class="navbar">
     <a class="brand" href="#" aria-label="ShocoStore home">
       <img :src="logo" alt="" />
       <span>ShocoStore</span>
@@ -13,6 +13,7 @@ import logo from '../assets/images/choco.png'
         <a href="#">Sākumlapa</a>
         <a href="#produkti">Produkti</a>
         <a href="#">Par mums</a>
+        <a href="#produktu-parvaldiba">Pārvaldīt</a>
       </nav>
 
       <div class="actions">
