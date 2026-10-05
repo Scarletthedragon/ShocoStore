@@ -56,6 +56,14 @@ button {
   gap: 35px;
 }
 
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex: 1;
+}
+
 .navbar nav a {
   color: #32170d;
   text-decoration: none;
@@ -66,6 +74,32 @@ button {
 
 .navbar nav a:hover {
   color: #f0278c;
+}
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.account-actions a {
+  padding: 9px 16px;
+  border: 1px solid #351508;
+  border-radius: 20px;
+  color: #351508;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.account-actions .signup-button {
+  background: #351508;
+  color: #fff;
+}
+
+.account-actions a:hover {
+  opacity: 0.8;
 }
 
 .actions {
@@ -79,6 +113,23 @@ button {
 
   font-size: 20px;
   cursor: pointer;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #351508;
+  font-size: 28px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.brand img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
 }
 
 
@@ -407,6 +458,31 @@ button {
     display: none;
   }
 
+  .navbar-center {
+    flex: 0;
+    margin-left: auto;
+    margin-right: 10px;
+  }
+
+  .brand {
+    gap: 6px;
+    font-size: 20px;
+  }
+
+  .brand img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .account-actions {
+    gap: 6px;
+  }
+
+  .account-actions a {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
   .hero-content {
     flex-direction: column;
 
@@ -442,5 +518,3 @@ button {
     font-size: 28px;
   }
 }
-
-
