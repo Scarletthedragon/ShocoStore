@@ -10,28 +10,11 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $products = [
-            ['Strawberry Energy', 'Šokolāde ar zemeņu garšu', 4.99, 'berry', 'JAUNUMS'],
-            ['Banana Energy', 'Šokolāde ar banānu garšu', 4.99, 'banana', 'POPULĀRĀKAIS'],
-            ['Mango Energy', 'Šokolāde ar mango garšu', 5.49, 'mango', 'LIMITĒTS'],
-        ];
-
-        foreach ($products as [$name, $description, $price, $tone, $tag]) {
-            Prece::query()->firstOrCreate(
-                ['Nosaukums' => $name],
-                [
-                    'Cena' => $price,
-                    'Atlikums' => 12,
-                    'Apraksts' => $description,
-                    'Tonis' => $tone,
-                    'Birka' => $tag,
-                ],
-            );
+        $products = json_decode(file_get_contents(database_path('seeders/catalog.json')), true, flags: JSON_THROW_ON_ERROR);
+        foreach ($products as $product) {
+            Prece::query()->firstOrCreate(['Nosaukums' => $product['name']], ['Cena' => $product['price'], 'Atlikums' => 25, 'Apraksts' => $product['description'], 'Tonis' => $product['id'], 'Birka' => $product['tag']]);
         }
     }
 }

@@ -43,9 +43,10 @@ class StoreController extends Controller
         return response()->json($this->productPayload($product), 201);
     }
 
-    public function orders(): JsonResponse
+    public function orders(Request $request): JsonResponse
     {
         $orders = Pasutijums::query()
+            ->where('Lietotajs_ID', $request->user()->getKey())
             ->with('prece')
             ->orderByDesc('Pasutijums_ID')
             ->get()
@@ -93,13 +94,18 @@ class StoreController extends Controller
 
     private function productPayload(Prece $product): array
     {
+        $catalog = json_decode(file_get_contents(database_path('seeders/catalog.json')), true, flags: JSON_THROW_ON_ERROR);
+        $visual = collect($catalog)->first(fn (array $item) => $item['name'] === $product->Nosaukums || $item['id'] === $product->Tonis) ?? [];
+
         return [
             'id' => (string) $product->Prece_ID,
             'name' => $product->Nosaukums,
             'description' => $product->Apraksts ?? '',
             'price' => (float) $product->Cena,
             'stock' => $product->Atlikums,
-            'tone' => $product->Tonis ?: 'mango',
+            'tone' => $visual['tone'] ?? 'yellow',
+            'tile' => $visual['tile'] ?? 8,
+            'category' => $visual['category'] ?? 'Piena',
             'tag' => $product->Birka ?? '',
         ];
     }
