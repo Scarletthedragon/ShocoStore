@@ -1,6 +1,7 @@
-﻿<script setup>
+<script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import logo from './assets/images/choco.png'
+import heroImage from './assets/images/hero-67.jpeg'
 import { money } from './data/products.js'
 import { catalog, catalogLoading, catalogError, loadCatalog, restoreSession, user, signOut } from './api/state.js'
 import ProductImage from './components/ProductImage.vue'
@@ -98,7 +99,7 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
           <div class="hero-actions"><a class="button pink-button" href="#/veikals">Izvēlies savu garšu ↗</a><a class="button outline-button" href="#par-mums">Kas ir sigma?</a></div>
           <div class="flavor-note"><span class="color-drops" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>4 garšas. Tava individualitāte.</span></div>
         </div>
-        <div class="hero-art photo-hero"><span class="floating-label mint-label">atklāj savu spēku ✦</span><ProductImage :tile="8" label="67 Original šokolādes iepakojums" /><span class="floating-label art-label">100% tavs moments</span></div></section>
+        <div class="hero-art photo-hero"><span class="floating-label mint-label">atklāj savu spēku ✦</span><img class="hero-photo" :src="heroImage" alt="67 šokolāde — ar 6 un 7 spēku" width="1254" height="1254" /><span class="floating-label art-label">100% tavs moments</span></div></section>
 
       <section id="produkti" class="flavors" aria-labelledby="flavors-title">
         <div class="flavors-inner content-width">
