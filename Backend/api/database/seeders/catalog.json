@@ -7,7 +7,8 @@
     "category": "Piena",
     "price": 7,
     "tile": 0,
-    "description": "Piena šokolāde ar zemeņu krēmu. Salds vasaras mirklis."
+    "description": "Piena šokolāde ar zemeņu krēmu. Salds vasaras mirklis.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 35, "ingredients": ["cukurs", "kakao sviests", "pilnpiena pulveris", "kakao masa", "zemeņu pulveris", "sojas lecitīns", "dabīgs vaniļas aromāts"], "allergens": ["piens", "soja"], "nutrition": {"energyKcal": 545, "fat": 34, "saturates": 21, "carbohydrate": 55, "sugars": 48, "protein": 6.2, "salt": 0.18}, "tastingNotes": "Krēmīga piena šokolāde ar izteiktu zemeņu aromātu un viegli skābenu ogu nobeigumu.", "texture": "Maiga, krēmīga pamatne ar mīkstu zemeņu krēma sajūtu.", "pairing": "Labi sader ar melno tēju vai svaigām zemenēm."}
   },
   {
     "id": "salt",
@@ -17,7 +18,8 @@
     "category": "Tumšā",
     "price": 11,
     "tile": 1,
-    "description": "Tumšā šokolāde ar jūras sāli un olīveļļas pieskārienu."
+    "description": "Tumšā šokolāde ar jūras sāli un olīveļļas pieskārienu.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 72, "ingredients": ["kakao masa", "cukurs", "kakao sviests", "augstākā labuma olīveļļa", "jūras sāls", "sojas lecitīns"], "allergens": ["soja"], "nutrition": {"energyKcal": 575, "fat": 43, "saturates": 25, "carbohydrate": 34, "sugars": 28, "protein": 7.5, "salt": 0.62}, "tastingNotes": "Spēcīgs kakao sākums, ko noslēdz augļaina olīveļļas nots un jūras sāls kontrasts.", "texture": "Blīva, lēni kūstoša tumšā šokolāde ar maigu eļļas spīdumu.", "pairing": "Izceļas kopā ar espresso vai gatavu bumbieri."}
   },
   {
     "id": "matcha",
@@ -27,7 +29,8 @@
     "category": "Baltā",
     "price": 10,
     "tile": 2,
-    "description": "Baltā šokolāde un maiga matcha. Tava zaļā enerģija."
+    "description": "Baltā šokolāde un maiga matcha. Tava zaļā enerģija.",
+    "details": {"cocoaLabel": "Kakao sviesta saturs", "cocoaPercentage": 32, "ingredients": ["cukurs", "kakao sviests", "pilnpiena pulveris", "matcha zaļās tējas pulveris", "sojas lecitīns", "dabīgs vaniļas aromāts"], "allergens": ["piens", "soja"], "nutrition": {"energyKcal": 565, "fat": 37, "saturates": 23, "carbohydrate": 54, "sugars": 49, "protein": 6.5, "salt": 0.15}, "tastingNotes": "Saldens piena un vaniļas pamats ar zāļainu, viegli rūgtenu matcha pēcgaršu.", "texture": "Zīdaina baltā šokolāde ar smalku tējas pulvera tekstūru.", "pairing": "Sader ar matcha latte vai viegli skābenām avenēm."}
   },
   {
     "id": "caramel",
@@ -37,7 +40,8 @@
     "category": "Piena",
     "price": 10,
     "tile": 3,
-    "description": "Kraukšķīga karamele maigā piena šokolādē."
+    "description": "Kraukšķīga karamele maigā piena šokolādē.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 35, "ingredients": ["cukurs", "kakao sviests", "pilnpiena pulveris", "kakao masa", "karamelizēts cukurs", "sojas lecitīns", "dabīgs vaniļas aromāts"], "allergens": ["piens", "soja"], "nutrition": {"energyKcal": 555, "fat": 36, "saturates": 22, "carbohydrate": 53, "sugars": 45, "protein": 6.5, "salt": 0.3}, "tastingNotes": "Sviestaina piena šokolāde ar grauzdēta cukura saldumu un nelielu sāļuma noti.", "texture": "Gluda šokolāde ar kraukšķīgiem karamelizēta cukura gabaliņiem.", "pairing": "Baudi ar kapučīno vai kraukšķīgu ābolu."}
   },
   {
     "id": "mint",
@@ -47,7 +51,8 @@
     "category": "Tumšā",
     "price": 10,
     "tile": 4,
-    "description": "Tumšā šokolāde ar svaigu piparmētru raksturu."
+    "description": "Tumšā šokolāde ar svaigu piparmētru raksturu.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 70, "ingredients": ["kakao masa", "cukurs", "kakao sviests", "piparmētru eļļa", "sojas lecitīns"], "allergens": ["soja"], "nutrition": {"energyKcal": 580, "fat": 44, "saturates": 26, "carbohydrate": 35, "sugars": 28, "protein": 7.8, "salt": 0.05}, "tastingNotes": "Dziļa kakao garša ar tīru, vēsu piparmētru nobeigumu.", "texture": "Vienmērīga, stingra tumšā šokolāde, kas mutē kūst lēni.", "pairing": "Lieliski papildina stipru kafiju vai piparmētru tēju."}
   },
   {
     "id": "raspberry",
@@ -57,7 +62,8 @@
     "category": "Piena",
     "price": 7,
     "tile": 5,
-    "description": "Ogu garšas sprādziens ar avenēm un piena šokolādi."
+    "description": "Ogu garšas sprādziens ar avenēm un piena šokolādi.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 35, "ingredients": ["cukurs", "kakao sviests", "pilnpiena pulveris", "kakao masa", "aveņu pulveris", "zemeņu pulveris", "sojas lecitīns"], "allergens": ["piens", "soja"], "nutrition": {"energyKcal": 540, "fat": 33, "saturates": 20, "carbohydrate": 57, "sugars": 49, "protein": 6.3, "salt": 0.14}, "tastingNotes": "Piena šokolādes saldums satiekas ar košu aveņu skābenumu un zemeņu aromātu.", "texture": "Krēmīga piena šokolāde ar smalku ogu pulvera vieglumu.", "pairing": "Pasniedz ar jogurtu, ogām vai vieglu melno tēju."}
   },
   {
     "id": "hazelnut",
@@ -67,7 +73,8 @@
     "category": "Piena",
     "price": 11,
     "tile": 6,
-    "description": "Grauzdēti lazdu rieksti un šokolāde. Kraukšķis katrā kumosā."
+    "description": "Grauzdēti lazdu rieksti un šokolāde. Kraukšķis katrā kumosā.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 38, "ingredients": ["cukurs", "lazdu rieksti", "kakao sviests", "pilnpiena pulveris", "kakao masa", "sojas lecitīns"], "allergens": ["lazdu rieksti", "piens", "soja"], "nutrition": {"energyKcal": 580, "fat": 40, "saturates": 20, "carbohydrate": 46, "sugars": 39, "protein": 8.5, "salt": 0.18}, "tastingNotes": "Grauzdētu lazdu riekstu aromāts ar sabalansētu piena šokolādes saldumu.", "texture": "Gluda pamatne un izteikti kraukšķīgi riekstu gabaliņi.", "pairing": "Baudi ar espresso vai grauzdētu kafiju."}
   },
   {
     "id": "mango",
@@ -77,7 +84,8 @@
     "category": "Baltā",
     "price": 12,
     "tile": 7,
-    "description": "Tropisks mango un zīdaini maiga baltā šokolāde."
+    "description": "Tropisks mango un zīdaini maiga baltā šokolāde.",
+    "details": {"cocoaLabel": "Kakao sviesta saturs", "cocoaPercentage": 30, "ingredients": ["cukurs", "kakao sviests", "pilnpiena pulveris", "mango pulveris", "sojas lecitīns", "dabīgs vaniļas aromāts"], "allergens": ["piens", "soja"], "nutrition": {"energyKcal": 560, "fat": 36, "saturates": 22, "carbohydrate": 57, "sugars": 51, "protein": 5.8, "salt": 0.13}, "tastingNotes": "Mango tropiskais saldums ar maigu vaniļas un piena noti.", "texture": "Zīdaina baltā šokolāde ar augļainu, viegli graudainu mango akcentu.", "pairing": "Sader ar kokosriekstu skaidiņām vai zaļo tēju."}
   },
   {
     "id": "original",
@@ -87,6 +95,7 @@
     "category": "Tumšā",
     "price": 9,
     "tile": 8,
-    "description": "Bagātīga šokolāde ar apelsīna notīm un sigma enerģiju."
+    "description": "Bagātīga šokolāde ar apelsīna notīm un sigma enerģiju.",
+    "details": {"cocoaLabel": "Kakao saturs", "cocoaPercentage": 67, "ingredients": ["kakao masa", "cukurs", "kakao sviests", "apelsīna miziņa", "sojas lecitīns"], "allergens": ["soja"], "nutrition": {"energyKcal": 580, "fat": 42, "saturates": 25, "carbohydrate": 39, "sugars": 31, "protein": 8, "salt": 0.02}, "tastingNotes": "Bagātīgs kakao ar svaigu citrusaugļu aromātu un nedaudz rūgtenu apelsīna miziņas finišu.", "texture": "Klasiska, stingra tumšā šokolāde ar smalkiem apelsīna miziņas gabaliņiem.", "pairing": "Labi sader ar espresso vai apelsīna šķēli."}
   }
 ]

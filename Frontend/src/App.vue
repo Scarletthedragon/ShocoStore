@@ -1,5 +1,5 @@
-<script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+﻿<script setup>
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import logo from './assets/images/choco.png'
 import heroImage from './assets/images/hero-67.jpeg'
 import { theme, toggleTheme } from './theme.js'
@@ -14,11 +14,13 @@ import { wishlistIds } from './wishlist.js'
 import LoginPage from './components/LoginPage.vue'
 import RegisterPage from './components/RegisterPage.vue'
 import CartDrawer from './components/CartDrawer.vue'
+import ProductDetailDialog from './components/ProductDetailDialog.vue'
 const products = computed(() => catalog.value.slice(0, 4))
 const mango = computed(() => catalog.value.find(item => item.tile === 7))
 const logoutBusy = ref(false)
 const page = ref('home')
 const cartDrawer = ref(null)
+const productDetailDialog = ref(null)
 const loginModal = ref(null)
 const cart = ref([])
 const announcement = ref('')
@@ -40,6 +42,8 @@ watch(cart, value => {
 }, { deep: true })
 const count = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0))
 function notify(message) { announcement.value = message; clearTimeout(toastTimer); toastTimer = setTimeout(() => { announcement.value = '' }, 3200) }
+function showProductDetails(product) { productDetailDialog.value?.open(product) }
+provide('openProductDetails', showProductDetails)
 function add(product) {
   const canonical = catalog.value.find(item => item.id === product.id)
   if (!canonical) return
@@ -111,8 +115,7 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
           <div class="section-heading"><h2 id="flavors-title">Izvēlies savu <span>varoni</span></h2><span class="collection-note">četras garšas ↙</span></div>
           <div class="product-grid">
             <article v-for="product in products" :key="product.id" class="flavor-card" :class="product.tone">
-              <WishButton :product="product" /><ProductImage class="home-product-photo" :tile="product.tile" :label="product.name" />
-              <span class="product-tag">{{ product.tag }}</span><h3>{{ product.name }}</h3><p>{{ product.description }}</p>
+              <WishButton :product="product" /><button class="product-detail-trigger home-product-detail-trigger" type="button" :aria-label="`Skatīt ${product.name} detaļas`" @click="showProductDetails(product)"><ProductImage class="home-product-photo" :tile="product.tile" :label="product.name" /><span class="product-tag">{{ product.tag }}</span><h3>{{ product.name }}</h3><p>{{ product.description }}</p></button>
               <div class="card-bottom"><span>{{ money(product.price) }}</span><button :disabled="product.stock <= 0" :aria-label="`Pievienot grozam: ${product.name}`" @click="add(product)">{{ product.stock > 0 ? 'add +' : 'Izpārdots' }}</button></div>
             </article>
           </div>
@@ -132,7 +135,7 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
 
     <footer class="site-footer"><div class="content-width footer-inner"><a class="brand footer-brand" href="#/sakums"><img :src="logo" alt="ShocoStore" /></a><p>Šokolāde ar raksturu. © {{ new Date().getFullYear() }} ShocoStore</p><a href="#/veikals">Veikals ↗</a><a href="#/par-mums">Mūsu stāsts ↗</a></div></footer>
     <p class="cart-status" role="status">{{ announcement }}</p>
-    <LoginPage ref="loginModal" /><CartDrawer ref="cartDrawer" :items="cart" @quantity="setQuantity" @remove="remove" @clear="cart = []" @login="loginModal.open()" @ordered="refreshProducts" />
+    <LoginPage ref="loginModal" /><CartDrawer ref="cartDrawer" :items="cart" @quantity="setQuantity" @remove="remove" @clear="cart = []" @login="loginModal.open()" @ordered="refreshProducts" /><ProductDetailDialog ref="productDetailDialog" />
   </div>
 </template>
 
