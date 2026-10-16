@@ -78,7 +78,6 @@ html:has(dialog[open]){overflow:hidden}
 html,body{background:var(--page-bg);color:var(--page-text)}
 .theme-toggle{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;padding:10px;border:1px solid var(--theme-border);border-radius:50%;background:transparent;color:var(--page-text)}
 .theme-toggle svg{width:22px;height:22px}.theme-toggle:hover{background:var(--surface);border-color:var(--pink)}
-:root[data-theme="dark"] .site-header .brand img{filter:drop-shadow(-1px 0 0 #fff) drop-shadow(1px 0 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 1px 0 #fff)}
 :root[data-theme="dark"] .site-header nav{border-color:var(--theme-border)}
 :root[data-theme="dark"] :is(.login-link,.category-tabs button,.password-field button,.login-close,.cart-heading button,.cart-panel li button){color:var(--page-text)}
 :root[data-theme="dark"] :is(.login-link,.eyebrow,.outline-button,.quantity-control){border-color:var(--theme-border)}
@@ -118,6 +117,9 @@ html,body{background:var(--page-bg);color:var(--page-text)}
 .wish-button svg,.wishlist-link svg{width:21px;height:21px}
 .wish-button:hover,.wishlist-link:hover{border-color:var(--pink);color:var(--pink)}
 .wish-button.is-wished{color:var(--pink);border-color:var(--pink)}
+
+.footer-brand img{filter:drop-shadow(-1px 0 0 #fff) drop-shadow(1px 0 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 1px 0 #fff)}
+:root[data-theme="dark"] .brand img{filter:drop-shadow(-1px 0 0 #fff) drop-shadow(1px 0 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 1px 0 #fff)}
 .wishlist-link{position:relative;background:transparent}.wishlist-link[aria-current="page"]{color:var(--pink);border-color:var(--pink)}
 .wishlist-badge{position:absolute;top:-5px;right:-5px;min-width:19px;height:19px;padding-inline:4px;border-radius:20px;background:var(--pink);color:white;font-size:10px;display:grid;place-items:center}
 .spotlight-copy .spotlight-wish{position:static;display:inline-grid;vertical-align:middle;margin:20px 0 0 10px;box-shadow:none}
