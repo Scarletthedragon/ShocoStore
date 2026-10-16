@@ -33,6 +33,34 @@ class StoreApiTest extends TestCase
             ->assertJsonPath('0.id', (string) $response->json('id'));
     }
 
+    public function test_catalog_products_include_chocolate_specific_details(): void
+    {
+        Prece::query()->create([
+            'Nosaukums' => 'Zemeņu krēms',
+            'Cena' => 7,
+            'Atlikums' => 5,
+            'Apraksts' => 'Piena šokolāde ar zemeņu krēmu.',
+            'Tonis' => 'berry',
+            'Birka' => 'Berry best',
+        ]);
+        Prece::query()->create([
+            'Nosaukums' => 'Sāls + Olīveļļa',
+            'Cena' => 11,
+            'Atlikums' => 5,
+            'Apraksts' => 'Tumšā šokolāde ar jūras sāli.',
+            'Tonis' => 'salt',
+            'Birka' => 'Sigma pick',
+        ]);
+
+        $this->getJson('/api/products')
+            ->assertOk()
+            ->assertJsonCount(2)
+            ->assertJsonPath('0.details.cocoaPercentage', 35)
+            ->assertJsonPath('0.details.allergens.0', 'piens')
+            ->assertJsonPath('1.details.cocoaPercentage', 72)
+            ->assertJsonPath('1.details.nutrition.salt', 0.62);
+    }
+
     public function test_order_saves_total_and_decrements_stock(): void
     {
         $product = $this->makeProduct(stock: 5);

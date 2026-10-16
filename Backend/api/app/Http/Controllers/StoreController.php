@@ -107,6 +107,7 @@ class StoreController extends Controller
             'tile' => $visual['tile'] ?? 8,
             'category' => $visual['category'] ?? 'Piena',
             'tag' => $product->Birka ?? '',
+            'details' => $visual['details'] ?? null,
         ];
     }
 

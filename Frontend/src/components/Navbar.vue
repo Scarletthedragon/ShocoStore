@@ -24,7 +24,7 @@ import logo from '../assets/images/choco.png'
 
     <div class="account-actions">
       <a class="login-button" href="#login">Log in</a>
-      <a class="signup-button" href="#signup">Sign up</a>
+      <a class="signup-button" href="#signup">Sign up</a>  
     </div>
 
   </header>
