@@ -162,3 +162,27 @@ html,body{background:var(--page-bg);color:var(--page-text)}
 .product-details-disclaimer{margin-top:20px;padding:12px 14px;border-left:3px solid var(--yellow);background:color-mix(in srgb,var(--yellow),transparent 86%);color:var(--muted);font-size:11px;line-height:1.6}
 :root[data-theme="dark"] .product-details-dialog{box-shadow:0 18px 60px #080503aa}
 @media(max-width:560px){.product-details-content{padding:58px 20px 22px}.product-details-intro{grid-template-columns:1fr;gap:18px;padding-right:0}.product-details-image{max-width:220px;margin-inline:auto}.product-details-summary h2{font-size:29px}.product-details-section{margin-top:20px;padding-top:16px}.product-details-section h3{font-size:17px}.product-nutrition div{font-size:12px}.product-details-dialog{border-radius:15px}}
+
+@media(max-width:560px){
+	.site-header{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px 12px;padding-block:14px 12px}
+	.site-header .brand{grid-column:1;grid-row:1;justify-self:start}
+	.site-header .brand img{width:86px}
+	.header-actions{grid-column:2;grid-row:1;flex-wrap:nowrap;justify-content:flex-end;gap:4px}
+	.header-actions .login-link{font-size:12px;padding-inline:8px}
+	.header-actions .cart-button{gap:8px;font-size:13px;padding-inline:8px}
+	.site-header nav{grid-column:1 / -1;grid-row:2;width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border:1px solid var(--theme-border);border-radius:12px;background:var(--surface)}
+	.site-header nav a{justify-content:center;min-width:0;min-height:40px;padding:7px 4px;border-radius:8px;font-size:13px}
+	.site-header nav a[aria-current=page]{background:var(--pink);color:#fff}
+	.footer-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:14px 20px;padding-block:24px}
+	.footer-inner .brand{grid-column:1;grid-row:1;justify-self:start}
+	.footer-inner p{grid-column:2;grid-row:1;width:auto;margin:0;text-align:right}
+	.footer-inner>a:not(.brand){justify-content:center;min-width:0;padding:8px 4px;border-top:1px solid #ddc8af55;border-bottom:1px solid #ddc8af55;white-space:nowrap}
+}
+
+@media(max-width:340px){
+	.site-header{grid-template-columns:1fr;gap:8px;padding-top:14px}
+	.site-header .brand{grid-column:1;grid-row:1;justify-self:center}
+	.site-header .brand img{width:95px}
+	.header-actions{grid-column:1;grid-row:2;justify-content:center}
+	.site-header nav{grid-column:1;grid-row:3}
+}
