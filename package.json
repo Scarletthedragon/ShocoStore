@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "backend": "cd Backend/api && php artisan serve --host=127.0.0.1 --port=8000",
+    "backend:setup": "cd Backend/api && composer run setup",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -1,45 +1,45 @@
 # ShocoStore
 
-## Requirements
+## Prasības
 
-- PHP 8.3 or later with `pdo_mysql`, `openssl`, `mbstring`, `fileinfo`, and `zip` enabled.
+- PHP 8.3 vai jaunāka versija ar ieslēgtiem `pdo_sqlite`, `openssl`, `mbstring`, `fileinfo` un `zip` paplašinājumiem.
 - Composer 2.
-- MySQL with a `ShocoStore` database.
-- Node.js and npm.
+- Node.js un npm.
 
-## Setup
+MySQL serveris vai Docker lokālai izstrādei nav nepieciešams. Backend pēc noklusējuma izmanto SQLite datubāzi failā `Backend/api/database/database.sqlite`.
 
-Create the MySQL database with `CREATE DATABASE ShocoStore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`. Copy `Backend/api/.env.example` to `Backend/api/.env` and set the MySQL credentials. Then run:
+## Uzstādīšana
+
+No repozitorija saknes mapes palaid:
 
 ```sh
-cd Backend/api
-composer install
-php artisan key:generate
-php artisan migrate --seed
+npm run backend:setup
 ```
 
-Start Laravel and Vite in separate terminals from the repository root:
+Komanda uzinstalē PHP atkarības, izveido `Backend/api/.env` no piemēra, sagatavo lokālo SQLite datubāzi, ģenerē Laravel atslēgu, izveido tabulas un ielādē sākuma preču katalogu. Esošais `.env` netiek aizstāts ar paraugu, bet datubāzei tiek piemērotas migrācijas.
+
+Ja `.env` jau ir izveidots ar MySQL iestatījumiem, pirms uzstādīšanas nomaini tajā `DB_CONNECTION=sqlite` un `DB_DATABASE=database/database.sqlite`. Tas atstāj MySQL datus neskartus, bet šī lokālā lietotnes kopija turpmāk izmantos SQLite failu.
+
+Pēc tam atver divus termināļus repozitorija saknes mapē:
 
 ```sh
 npm run backend
+```
+
+```sh
 npm run dev
 ```
 
-Laravel serves the API on port 8000; Vite forwards `/api` requests to it. Use Laravel migrations to create the tables instead of importing the SQL schema a second time.
+Laravel API būs pieejams `http://127.0.0.1:8000`, bet Vite priekšskatījums — tā norādītajā lokālajā adresē. Vite pārsūta `/api` pieprasījumus Laravel serverim.
+
+Shēmu un testa/preču datus pārvalda Laravel migrācijas un sējējs — SQL failus manuāli importēt nevajag. Lai pilnībā atiestatītu lokālo datubāzi un no jauna ielādētu katalogu, no `Backend/api` mapes palaid `php artisan migrate:fresh --seed`; šī komanda dzēš visus pašreizējos datubāzes datus.
+
+Ja vajadzīgs MySQL, izveido datubāzi `ShocoStore` un nomaini `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` un `DB_PASSWORD` vērtības failā `Backend/api/.env`.
 
 ## API
 
-- `GET /api/products` lists the product catalogue.
-- `POST /api/products` saves a product with `name`, `price`, and optional `stock`, `description`, `tone`, and `tag` fields.
-- `GET /api/orders` lists saved orders.
-- `POST /api/orders` saves an order with `productId`, `quantity`, and optional `customerName`; stock is checked and decremented in a database transaction.
-- `GET /api/health` checks that the API is running.
-
-The reusable request preset is `Frontend/src/api/store.js`:
-
-```js
-import { saveProduct, saveOrder } from './api/store.js'
-
-await saveProduct({ name: 'Hazelnut Energy', price: 5.25, stock: 20 })
-await saveOrder({ productId: '1', quantity: 2, customerName: 'Guest' })
-```
+- `GET /api/products` — preču katalogs.
+- `POST /api/products` — saglabā preci ar `name`, `price` un neobligātajiem `stock`, `description`, `tone`, `tag` laukiem.
+- `GET /api/orders` — pieslēgtā lietotāja pasūtījumi.
+- `POST /api/orders` — saglabā pasūtījumu ar `productId`, `quantity` un neobligāto `customerName`; krājumu pārbauda un samazina datubāzes transakcijā.
+- `GET /api/health` — pārbauda API pieejamību.
