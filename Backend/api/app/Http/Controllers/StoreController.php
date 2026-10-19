@@ -14,6 +14,7 @@ class StoreController extends Controller
     public function products(): JsonResponse
     {
         $products = Prece::query()
+            ->whereNotIn('Nosaukums', ['Burbuļu sapnis', 'Melleņu bomba', 'Skarbā vafeļu šokolāde'])
             ->orderBy('Prece_ID')
             ->get()
             ->map(fn (Prece $product) => $this->productPayload($product));
