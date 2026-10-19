@@ -15,7 +15,6 @@ import LoginPage from './components/LoginPage.vue'
 import RegisterPage from './components/RegisterPage.vue'
 import CartDrawer from './components/CartDrawer.vue'
 import ProductDetailDialog from './components/ProductDetailDialog.vue'
-const products = computed(() => catalog.value.slice(0, 4))
 const mango = computed(() => catalog.value.find(item => item.tile === 7))
 const logoutBusy = ref(false)
 const page = ref('home')
@@ -109,18 +108,6 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
           <div class="flavor-note"><span class="color-drops" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span>4 garšas. Tava individualitāte.</span></div>
         </div>
         <div class="hero-art photo-hero"><span class="floating-label mint-label">atklāj savu spēku ✦</span><img class="hero-photo" :src="heroImage" alt="67 šokolāde — ar 6 un 7 spēku" width="1254" height="1254" /><span class="floating-label art-label">100% tavs moments</span></div></section>
-
-      <section id="produkti" class="flavors" aria-labelledby="flavors-title">
-        <div class="flavors-inner content-width">
-          <div class="section-heading"><h2 id="flavors-title">Izvēlies savu <span>varoni</span></h2><span class="collection-note">četras garšas ↙</span></div>
-          <div class="product-grid">
-            <article v-for="product in products" :key="product.id" class="flavor-card" :class="product.tone">
-              <WishButton :product="product" /><button class="product-detail-trigger home-product-detail-trigger" type="button" :aria-label="`Skatīt ${product.name} detaļas`" @click="showProductDetails(product)"><ProductImage class="home-product-photo" :tile="product.tile" :label="product.name" /><span class="product-tag">{{ product.tag }}</span><h3>{{ product.name }}</h3><p>{{ product.description }}</p></button>
-              <div class="card-bottom"><span>{{ money(product.price) }}</span><button :disabled="product.stock <= 0" :aria-label="`Pievienot grozam: ${product.name}`" @click="add(product)">{{ product.stock > 0 ? 'add +' : 'Izpārdots' }}</button></div>
-            </article>
-          </div>
-        </div>
-      </section>
 
       <section id="jaunums" class="spotlight content-width" aria-labelledby="mango-title">
         <div class="spotlight-copy"><span class="handwritten">✦ mazliet saules, daudz garšas</span><h2 id="mango-title">KŪSTOŠAIS MANGO</h2><p>Saulains mango. Maiga baltā šokolāde. Tavs tropiskais piedzīvojums katrā kumosā.</p><button class="button pink-button" :disabled="!mango || mango.stock <= 0" @click="add(mango)">{{ mango ? `Ķer sauli · ${money(mango.price)} ↗` : 'Drīzumā' }}</button><WishButton v-if="mango" class="spotlight-wish" :product="mango" /><span class="spotlight-note">Vasaras sajūta<br />jebkurā gadalaikā.</span></div>
