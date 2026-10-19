@@ -20,6 +20,16 @@ Komanda uzinstalē PHP atkarības, izveido `Backend/api/.env` no piemēra, sagat
 
 Ja `.env` jau ir izveidots ar MySQL iestatījumiem, pirms uzstādīšanas nomaini tajā `DB_CONNECTION=sqlite` un `DB_DATABASE=database/database.sqlite`. Tas atstāj MySQL datus neskartus, bet šī lokālā lietotnes kopija turpmāk izmantos SQLite failu.
 
+## Atlaižu kodu administrēšana
+
+Izveido lietotāja kontu veikalā, tad iestati tā e-pastu `ADMIN_EMAIL` vērtībā failā `Backend/api/.env` un no `Backend/api` mapes palaid `php artisan config:clear`. Pēc pārlādes pieslēdzies šim kontam un atver `http://localhost:5173/#/admin` (vai Vite terminālī parādīto adresi). Admina e-pastu iestati tikai pēc sava konta izveides, lai publiskā reģistrācija nevarētu iepriekš rezervēt šo adresi.
+
+Admina lapā var izveidot manuālu vai automātiski ģenerētu atlaižu kodu ar 0.01–100% atlaidi, vienu/neierobežotu lietošanas reižu skaitu un derīguma termiņu. Kodi tiek saglabāti datubāzē; neaktīvu, izlietotu vai beigušos kodu grozā vairs nepieņem.
+
+Tajā pašā lapā administrators var pievienot jaunas šokolādes un rediģēt esošo nosaukumu, cenu, atlikumu, aprakstu, birku, iepakojuma stilu un produkta attēlu (JPG, PNG vai WebP līdz 5 MB). Attēli tiek glabāti Laravel publiskajā diskā. Šokolādi var dzēst, ja tai nav pasūtījumu; pasūtījumu vēsture tiek saglabāta. Veidojot kuponu, izvēlies konkrētās šokolādes, uz kurām atlaide attiecas; ja neviena nav izvēlēta, kupons attiecas uz visām.
+
+Pasūtījuma noformēšanas lapa ir pieejama maršrutā `#/pasutijums`; to var atvērt arī no groza. Lapā pārskati grozu, piemēro atlaižu kodu un apstiprini pasūtījumu. Piegāde un tiešsaistes apmaksa pašlaik nav pieejama.
+
 Pēc tam atver divus termināļus repozitorija saknes mapē:
 
 ```sh
@@ -40,6 +50,7 @@ Ja vajadzīgs MySQL, izveido datubāzi `ShocoStore` un nomaini `DB_CONNECTION`, 
 
 - `GET /api/products` — preču katalogs.
 - `POST /api/products` — saglabā preci ar `name`, `price` un neobligātajiem `stock`, `description`, `tone`, `tag` laukiem.
+- `POST /api/products` — administrators var papildus augšupielādēt produkta `image`; `POST /api/products/{id}` ar `_method=PUT` atjaunina preci un, ja norādīts, aizstāj tās attēlu. Palaid `php artisan storage:link`, lai publiski attēli būtu pieejami.
 - `GET /api/orders` — pieslēgtā lietotāja pasūtījumi.
 - `POST /api/orders` — saglabā pasūtījumu ar `productId`, `quantity` un neobligāto `customerName`; krājumu pārbauda un samazina datubāzes transakcijā.
 - `GET /api/health` — pārbauda API pieejamību.

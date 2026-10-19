@@ -3,17 +3,27 @@
 namespace Tests\Feature;
 
 use App\Models\Pasutijums;
+use App\Models\Customer;
 use App\Models\Prece;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class StoreApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['app.admin_email' => 'admin@example.com']);
+    }
+
     public function test_products_can_be_saved_and_listed(): void
     {
-        $response = $this->postJson('/api/products', [
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+        $response = $this->actingAs($admin)->postJson('/api/products', [
             'name' => 'Hazelnut Energy',
             'price' => 5.25,
             'stock' => 8,
@@ -31,6 +41,142 @@ class StoreApiTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1)
             ->assertJsonPath('0.id', (string) $response->json('id'));
+    }
+
+    public function test_only_admin_can_create_or_update_chocolates(): void
+    {
+        $this->postJson('/api/products', [
+            'name' => 'Unauthorized chocolate',
+            'price' => 5,
+            'stock' => 5,
+            'tone' => 'berry',
+        ])->assertUnauthorized();
+
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'other@example.com']))
+            ->postJson('/api/products', [
+                'name' => 'Unauthorized chocolate',
+                'price' => 5,
+                'stock' => 5,
+                'tone' => 'berry',
+            ])->assertForbidden();
+
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+        $this->actingAs($admin)->postJson('/api/products', [
+            'name' => 'New chocolate',
+            'price' => 4.50,
+            'stock' => 10,
+            'description' => 'New flavour',
+            'tone' => 'matcha',
+            'tag' => 'New',
+        ])->assertCreated()->assertJsonPath('name', 'New chocolate');
+
+        $product = Prece::query()->firstOrFail();
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'buyer@example.com']))
+            ->putJson("/api/products/{$product->getKey()}", [
+                'name' => 'Unauthorized update',
+                'price' => 1,
+                'stock' => 1,
+                'description' => '',
+                'tone' => 'berry',
+                'tag' => '',
+            ])->assertForbidden();
+
+        $this->actingAs($admin);
+        $this->putJson("/api/products/{$product->getKey()}", [
+            'name' => 'Updated chocolate',
+            'price' => 8.25,
+            'stock' => 20,
+            'description' => 'Updated flavour',
+            'tone' => 'mango',
+            'tag' => 'Updated',
+        ])->assertOk()->assertJsonPath('name', 'Updated chocolate')->assertJsonPath('price', 8.25);
+
+        $this->assertDatabaseHas('Prece', [
+            'Prece_ID' => $product->getKey(),
+            'Nosaukums' => 'Updated chocolate',
+            'Atlikums' => 20,
+        ]);
+    }
+
+    public function test_admin_can_upload_and_replace_a_product_image(): void
+    {
+        Storage::fake('public');
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+
+        $created = $this->actingAs($admin)->post('/api/products', [
+            'name' => 'Chocolate with image',
+            'price' => 6.50,
+            'stock' => 4,
+            'tone' => 'berry',
+            'image' => UploadedFile::fake()->image('first.png'),
+        ]);
+
+        $created->assertCreated()
+            ->assertJsonPath('name', 'Chocolate with image');
+
+        $product = Prece::query()->findOrFail($created->json('id'));
+        $oldImagePath = $product->image_path;
+        $this->assertNotNull($oldImagePath);
+        Storage::disk('public')->assertExists($oldImagePath);
+        $this->assertStringEndsWith($oldImagePath, $created->json('imageUrl'));
+
+        $this->actingAs($admin)->post("/api/products/{$product->getKey()}", [
+            '_method' => 'PUT',
+            'name' => 'Chocolate with replacement image',
+            'price' => 6.50,
+            'stock' => 4,
+            'tone' => 'berry',
+            'image' => UploadedFile::fake()->image('replacement.png'),
+        ])->assertOk()->assertJsonPath('name', 'Chocolate with replacement image');
+
+        $newImagePath = $product->fresh()->image_path;
+        $this->assertNotSame($oldImagePath, $newImagePath);
+        Storage::disk('public')->assertMissing($oldImagePath);
+        Storage::disk('public')->assertExists($newImagePath);
+    }
+
+    public function test_admin_can_delete_a_chocolate_and_its_image(): void
+    {
+        Storage::fake('public');
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+        $created = $this->actingAs($admin)->post('/api/products', [
+            'name' => 'Chocolate to delete',
+            'price' => 6.50,
+            'stock' => 4,
+            'tone' => 'berry',
+            'image' => UploadedFile::fake()->image('chocolate.png'),
+        ])->assertCreated();
+        $product = Prece::query()->findOrFail($created->json('id'));
+        $imagePath = $product->image_path;
+        Storage::disk('public')->assertExists($imagePath);
+
+        $this->deleteJson("/api/products/{$product->getKey()}")
+            ->assertOk()
+            ->assertJsonPath('id', (string) $product->getKey());
+
+        $this->assertDatabaseMissing('Prece', ['Prece_ID' => $product->getKey()]);
+        Storage::disk('public')->assertMissing($imagePath);
+    }
+
+    public function test_admin_cannot_delete_a_chocolate_with_orders(): void
+    {
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+        $product = $this->makeProduct(stock: 5);
+        Pasutijums::query()->create([
+            'Lietotajs_ID' => null,
+            'Prece_ID' => $product->Prece_ID,
+            'Daudzums' => 1,
+            'Kopeja_cena' => 5.25,
+            'Statuss' => 'gaida',
+            'Klienta_vards' => 'Test buyer',
+        ]);
+
+        $this->actingAs($admin)
+            ->deleteJson("/api/products/{$product->getKey()}")
+            ->assertStatus(409)
+            ->assertJsonPath('error', 'Šokolādi nevar dzēst, jo tai ir piesaistīti pasūtījumi.');
+
+        $this->assertDatabaseHas('Prece', ['Prece_ID' => $product->getKey()]);
     }
 
     public function test_catalog_products_include_chocolate_specific_details(): void

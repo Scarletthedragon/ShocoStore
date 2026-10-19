@@ -43,7 +43,7 @@ defineExpose({ open, close })
       <button class="product-details-close" type="button" aria-label="Aizvērt produkta detaļas" @click="close">✕</button>
       <div class="product-details-intro">
         <div class="product-details-image">
-          <ProductImage :tile="product.tile" :label="product.name" />
+          <ProductImage :tile="product.tile" :label="product.name" :image-url="product.imageUrl" />
         </div>
         <div class="product-details-summary">
           <span class="product-tag">{{ product.tag }}</span>

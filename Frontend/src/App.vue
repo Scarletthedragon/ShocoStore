@@ -14,7 +14,9 @@ import { wishlistIds } from './wishlist.js'
 import LoginPage from './components/LoginPage.vue'
 import RegisterPage from './components/RegisterPage.vue'
 import CartDrawer from './components/CartDrawer.vue'
+import CheckoutPage from './components/CheckoutPage.vue'
 import ProductDetailDialog from './components/ProductDetailDialog.vue'
+import AdminPage from './components/AdminPage.vue'
 const products = computed(() => catalog.value.slice(0, 4))
 const mango = computed(() => catalog.value.find(item => item.tile === 7))
 const logoutBusy = ref(false)
@@ -24,8 +26,6 @@ const productDetailDialog = ref(null)
 const loginModal = ref(null)
 const cart = ref([])
 const announcement = ref('')
-const email = ref('')
-const discount = ref(false)
 let toastTimer
 function loadCart() {
   try {
@@ -61,15 +61,18 @@ function setQuantity(id, quantity) {
   const item = cart.value.find(item => item.id === id)
   if (item) item.quantity = Math.min(99, Math.max(1, item.stock), quantity)
 }
-function claimDiscount() { discount.value = true }
+function goToCheckout() {
+  cartDrawer.value?.close()
+  window.location.hash = '#/pasutijums'
+}
 async function syncPage() {
   let hash = window.location.hash
   const legacyLogin = hash === '#/login'
   if (legacyLogin) { history.replaceState(null, '', '#/sakums'); hash = '#/sakums' }
   loginModal.value?.close()
-  page.value = hash === '#/velmes' ? 'wishlist' : hash === '#/veikals' ? 'shop' : hash === '#/registracija' ? 'register' : ['#/par-mums', '#par-mums'].includes(hash) ? 'about' : 'home'
+  page.value = ['#/pasutijums', '#/noformesana'].includes(hash) ? 'checkout' : hash === '#/admin' ? 'admin' : hash === '#/velmes' ? 'wishlist' : hash === '#/veikals' ? 'shop' : hash === '#/registracija' ? 'register' : ['#/par-mums', '#par-mums'].includes(hash) ? 'about' : 'home'
   document.documentElement.lang = 'lv'
-  document.title = `${page.value === 'wishlist' ? 'Vēlmju saraksts' : page.value === 'about' ? 'Mūsu stāsts' : page.value === 'shop' ? 'Šokolādes veikals' : page.value === 'register' ? 'Reģistrēties' : 'Šokolāde ar raksturu'} | ShocoStore`
+  document.title = `${page.value === 'checkout' ? 'Noformēt pasūtījumu' : page.value === 'admin' ? 'Atlaižu kodi' : page.value === 'wishlist' ? 'Vēlmju saraksts' : page.value === 'about' ? 'Mūsu stāsts' : page.value === 'shop' ? 'Šokolādes veikals' : page.value === 'register' ? 'Reģistrēties' : 'Šokolāde ar raksturu'} | ShocoStore`
   await nextTick()
   if (legacyLogin) loginModal.value?.open()
   const target = ['#jaunums', '#par-mums', '#produkti'].includes(hash) ? document.getElementById(hash.slice(1)) : null
@@ -94,11 +97,11 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
   <div class="storefront">
     <header class="site-header content-width">
       <a class="brand" href="#/sakums" aria-label="ShocoStore sākumlapa"><img :src="logo" alt="ShocoStore" /></a>
-      <nav aria-label="Galvenā navigācija"><a href="#/veikals" :aria-current="page === 'shop' ? 'page' : undefined">Veikals</a><a href="#jaunums">Jaunumi</a><a href="#/par-mums" :aria-current="page === 'about' ? 'page' : undefined">Stāsts</a></nav>
+      <nav aria-label="Galvenā navigācija"><a href="#/veikals" :aria-current="page === 'shop' ? 'page' : undefined">Veikals</a><a href="#jaunums">Jaunumi</a><a href="#/par-mums" :aria-current="page === 'about' ? 'page' : undefined">Stāsts</a><a v-if="user?.isAdmin" href="#/admin" :aria-current="page === 'admin' ? 'page' : undefined">Admin</a></nav>
       <div class="header-actions"><a class="wishlist-link" href="#/velmes" :aria-current="page === 'wishlist' ? 'page' : undefined" :aria-label="`Vēlmju saraksts: ${wishlistIds.length} produkti`" title="Vēlmju saraksts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" /></svg><span v-if="wishlistIds.length" class="wishlist-badge">{{ wishlistIds.length }}</span></a><button class="theme-toggle" type="button" :aria-pressed="theme === 'dark'" aria-label="Tumšais režīms" :title="theme === 'dark' ? 'Ieslēgt gaišo režīmu' : 'Ieslēgt tumšo režīmu'" @click="toggleTheme"><svg v-if="theme === 'light'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.5 13.1A8.5 8.5 0 0 1 10.9 3.5a8.5 8.5 0 1 0 9.6 9.6Z" /></svg><svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg></button><button v-if="!user" class="login-link" type="button" @click="loginModal.open()">Log in ↗</button><button v-else class="login-link" type="button" :disabled="logoutBusy" :aria-label="`Izrakstīties: ${user.name}`" @click="logoutAccount">Izrakstīties</button><button class="cart-button" @click="cartDrawer.open()">grozs <span>{{ count }}</span></button></div>
     </header>
 
-    <ShopPage v-if="page === 'shop'" @add="add" /><WishlistPage v-else-if="page === 'wishlist'" @add="add" /><AboutPage v-else-if="page === 'about'" /><RegisterPage v-else-if="page === 'register'" @login="loginModal.open()" /><main v-else id="sakums"><p v-if="catalogLoading" class="api-status content-width" role="status">Ielādē produktus…</p><div v-if="catalogError" class="form-message content-width" role="alert">{{ catalogError }} <button class="button outline-button" @click="refreshProducts">Mēģināt vēlreiz</button></div>
+    <CheckoutPage v-if="page === 'checkout'" :items="cart" @quantity="setQuantity" @remove="remove" @clear="cart = []" @login="loginModal.open()" @ordered="refreshProducts" /><AdminPage v-else-if="page === 'admin' && user?.isAdmin" @products-updated="refreshProducts" /><main v-else-if="page === 'admin'" class="admin-page content-width"><h1>Admin piekļuve nepieciešama</h1><p class="admin-intro">Pieslēdzies ar kontu, kas norādīts servera ADMIN_EMAIL iestatījumā.</p><button v-if="!user" class="button pink-button" @click="loginModal.open()">Pieslēgties</button></main><ShopPage v-else-if="page === 'shop'" @add="add" /><WishlistPage v-else-if="page === 'wishlist'" @add="add" /><AboutPage v-else-if="page === 'about'" /><RegisterPage v-else-if="page === 'register'" @login="loginModal.open()" /><main v-else id="sakums"><p v-if="catalogLoading" class="api-status content-width" role="status">Ielādē produktus…</p><div v-if="catalogError" class="form-message content-width" role="alert">{{ catalogError }} <button class="button outline-button" @click="refreshProducts">Mēģināt vēlreiz</button></div>
       <section class="hero content-width" aria-labelledby="hero-title">
         <div class="hero-copy">
           <span class="eyebrow">♡ Šokolāde ar raksturu</span>
@@ -115,7 +118,7 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
           <div class="section-heading"><h2 id="flavors-title">Izvēlies savu <span>varoni</span></h2><span class="collection-note">četras garšas ↙</span></div>
           <div class="product-grid">
             <article v-for="product in products" :key="product.id" class="flavor-card" :class="product.tone">
-              <WishButton :product="product" /><button class="product-detail-trigger home-product-detail-trigger" type="button" :aria-label="`Skatīt ${product.name} detaļas`" @click="showProductDetails(product)"><ProductImage class="home-product-photo" :tile="product.tile" :label="product.name" /><span class="product-tag">{{ product.tag }}</span><h3>{{ product.name }}</h3><p>{{ product.description }}</p></button>
+              <WishButton :product="product" /><button class="product-detail-trigger home-product-detail-trigger" type="button" :aria-label="`Skatīt ${product.name} detaļas`" @click="showProductDetails(product)"><ProductImage class="home-product-photo" :tile="product.tile" :label="product.name" :image-url="product.imageUrl" /><span class="product-tag">{{ product.tag }}</span><h3>{{ product.name }}</h3><p>{{ product.description }}</p></button>
               <div class="card-bottom"><span>{{ money(product.price) }}</span><button :disabled="product.stock <= 0" :aria-label="`Pievienot grozam: ${product.name}`" @click="add(product)">{{ product.stock > 0 ? 'add +' : 'Izpārdots' }}</button></div>
             </article>
           </div>
@@ -126,19 +129,10 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
         <div class="spotlight-copy"><span class="handwritten">✦ mazliet saules, daudz garšas</span><h2 id="mango-title">KŪSTOŠAIS MANGO</h2><p>Saulains mango. Maiga baltā šokolāde. Tavs tropiskais piedzīvojums katrā kumosā.</p><button class="button pink-button" :disabled="!mango || mango.stock <= 0" @click="add(mango)">{{ mango ? `Ķer sauli · ${money(mango.price)} ↗` : 'Drīzumā' }}</button><WishButton v-if="mango" class="spotlight-wish" :product="mango" /><span class="spotlight-note">Vasaras sajūta<br />jebkurā gadalaikā.</span></div>
         <div class="mango-art photo-mango"><span class="new-label">New drop ↗</span><ProductImage :tile="7" label="Kūstošais mango šokolādes iepakojums" /></div></section>
 
-      <section class="newsletter content-width" aria-labelledby="newsletter-title">
-        <span class="newsletter-tag">Join the club</span><span class="sparkle" aria-hidden="true">✧</span><h2 id="newsletter-title">15% no tava pirmā pirkuma.<br />Bez meliem.</h2><p>Pievienojies mūsu saldajam klubam un saņem atlaižu kodu savam pirmajam pirkumam.</p>
-        <form @submit.prevent="claimDiscount"><label class="sr-only" for="email">Tava e-pasta adrese</label><input id="email" v-model="email" type="email" placeholder="Tavs e-pasts" autocomplete="email" required /><button class="button brown-button" type="submit">Saņemt kodu ↗</button></form>
-        <p v-if="discount" class="discount-message" role="status">Tavs demonstrācijas kods: SIGMA15. E-pasts netiek nosūtīts.</p>
-      </section>
     </main>
 
     <footer class="site-footer"><div class="content-width footer-inner"><a class="brand footer-brand" href="#/sakums"><img :src="logo" alt="ShocoStore" /></a><p>Šokolāde ar raksturu. © {{ new Date().getFullYear() }} ShocoStore</p><a href="#/veikals">Veikals ↗</a><a href="#/par-mums">Mūsu stāsts ↗</a></div></footer>
     <p class="cart-status" role="status">{{ announcement }}</p>
-    <LoginPage ref="loginModal" /><CartDrawer ref="cartDrawer" :items="cart" @quantity="setQuantity" @remove="remove" @clear="cart = []" @login="loginModal.open()" @ordered="refreshProducts" /><ProductDetailDialog ref="productDetailDialog" />
+    <LoginPage ref="loginModal" /><CartDrawer ref="cartDrawer" :items="cart" @quantity="setQuantity" @remove="remove" @clear="cart = []" @checkout="goToCheckout" /><ProductDetailDialog ref="productDetailDialog" />
   </div>
 </template>
-
-
-
-

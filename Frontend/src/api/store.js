@@ -20,5 +20,25 @@ export const login = credentials => mutate('/auth/login', credentials)
 export const register = details => mutate('/auth/register', details)
 export const logout = () => mutate('/auth/logout')
 export const checkout = order => mutate('/checkout', order)
-export const saveProduct = product => request('/products', { method: 'POST', data: product })
-export const saveOrder = order => request('/orders', { method: 'POST', data: order })
+export const validateCoupon = (code, productIds) => request('/coupons/validate', { params: { code, productIds } })
+export const getAdminCoupons = () => request('/admin/coupons')
+export const createAdminCoupon = coupon => mutate('/admin/coupons', coupon)
+export const revokeAdminCoupon = id => request(`/admin/coupons/${id}`, { method: 'DELETE' })
+function productFormData(product) {
+  const data = new FormData()
+  for (const [key, value] of Object.entries(product)) {
+    if (value !== undefined && value !== null) data.append(key, value)
+  }
+  return data
+}
+export const saveProduct = product => mutate('/products', productFormData(product))
+export async function updateProduct(id, product) {
+  const data = productFormData(product)
+  data.append('_method', 'PUT')
+  const { token } = await request('/auth/csrf')
+  return request(`/products/${id}`, { method: 'POST', data, headers: { 'X-CSRF-TOKEN': token } })
+}
+export const deleteProduct = async id => {
+  const { token } = await request('/auth/csrf')
+  return request(`/products/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': token } })
+}

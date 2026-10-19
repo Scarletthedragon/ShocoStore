@@ -54,6 +54,12 @@ class AuthController extends Controller
 
     private function payload(Customer $customer): array
     {
-        return ['id' => (string) $customer->getKey(), 'name' => $customer->Vards, 'email' => $customer->Epasts];
+        return [
+            'id' => (string) $customer->getKey(),
+            'name' => $customer->Vards,
+            'email' => $customer->Epasts,
+            'isAdmin' => config('app.admin_email') !== ''
+                && hash_equals(config('app.admin_email'), mb_strtolower($customer->Epasts)),
+        ];
     }
 }

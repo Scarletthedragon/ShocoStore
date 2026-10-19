@@ -6,6 +6,7 @@ use App\Models\Pasutijums;
 use App\Models\Prece;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 class StoreController extends Controller
@@ -22,25 +23,76 @@ class StoreController extends Controller
 
     public function storeProduct(Request $request): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validateProduct($request);
+
+        $attributes = $this->productAttributes($data);
+        if ($request->hasFile('image')) {
+            $attributes['image_path'] = $request->file('image')->storePublicly('chocolates', 'public');
+        }
+        $product = Prece::query()->create($attributes);
+
+        return response()->json($this->productPayload($product), 201);
+    }
+
+    public function updateProduct(Request $request, Prece $product): JsonResponse
+    {
+        $data = $this->validateProduct($request, true);
+        $attributes = $this->productAttributes($data);
+        $oldImage = $product->image_path;
+        if ($request->hasFile('image')) {
+            $attributes['image_path'] = $request->file('image')->storePublicly('chocolates', 'public');
+        }
+        $product->update($attributes);
+        if ($oldImage && isset($attributes['image_path'])) {
+            Storage::disk('public')->delete($oldImage);
+        }
+
+        return response()->json($this->productPayload($product->fresh()));
+    }
+
+    public function destroyProduct(Prece $product): JsonResponse
+    {
+        if ($product->pasutijumi()->exists()) {
+            return response()->json([
+                'error' => 'Šokolādi nevar dzēst, jo tai ir piesaistīti pasūtījumi.',
+            ], 409);
+        }
+
+        $imagePath = $product->image_path;
+        $product->delete();
+
+        if ($imagePath) {
+            Storage::disk('public')->delete($imagePath);
+        }
+
+        return response()->json(['id' => (string) $product->getKey()]);
+    }
+
+    private function validateProduct(Request $request, bool $updating = false): array
+    {
+        $required = $updating ? 'required' : 'sometimes';
+
+        return $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'stock' => ['sometimes', 'integer', 'min:0'],
+            'stock' => [$required, 'integer', 'min:0'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'tone' => ['nullable', 'string', 'max:25'],
+            'tone' => [$required, 'nullable', 'string', 'max:25'],
             'tag' => ['nullable', 'string', 'max:50'],
+            'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
+    }
 
-        $product = Prece::query()->create([
+    private function productAttributes(array $data): array
+    {
+        return [
             'Nosaukums' => trim($data['name']),
             'Cena' => $data['price'],
             'Atlikums' => $data['stock'] ?? 0,
             'Apraksts' => $data['description'] ?? null,
             'Tonis' => $data['tone'] ?? 'mango',
             'Birka' => $data['tag'] ?? '',
-        ]);
-
-        return response()->json($this->productPayload($product), 201);
+        ];
     }
 
     public function orders(Request $request): JsonResponse
@@ -108,6 +160,8 @@ class StoreController extends Controller
             'category' => $visual['category'] ?? 'Piena',
             'tag' => $product->Birka ?? '',
             'details' => $visual['details'] ?? null,
+            'visualId' => $product->Tonis,
+            'imageUrl' => $product->image_path ? Storage::disk('public')->url($product->image_path) : null,
         ];
     }
 

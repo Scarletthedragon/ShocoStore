@@ -20,6 +20,7 @@ class Prece extends Model
         'Apraksts',
         'Tonis',
         'Birka',
+        'image_path',
     ];
 
     protected function casts(): array

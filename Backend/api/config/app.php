@@ -14,6 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    'admin_email' => mb_strtolower(trim((string) env('ADMIN_EMAIL', ''))),
 
     /*
     |--------------------------------------------------------------------------

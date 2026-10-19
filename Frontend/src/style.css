@@ -186,3 +186,90 @@ html,body{background:var(--page-bg);color:var(--page-text)}
 	.header-actions{grid-column:1;grid-row:2;justify-content:center}
 	.site-header nav{grid-column:1;grid-row:3}
 }
+
+.admin-page{padding-block:48px 80px;min-height:60vh}
+.admin-page>h1{font-size:clamp(34px,5vw,52px);margin-top:16px}
+.admin-intro{margin-top:10px;color:#806c5d}
+.admin-coupon-form{display:grid;gap:12px;margin-top:32px;padding:24px;border:1px solid #ddc8af;border-radius:20px;background:#fffaf0}
+.admin-coupon-form h2,.admin-coupon-list h2{font-size:24px;margin-bottom:4px}
+.admin-coupon-form label{font-size:13px;font-weight:600}
+.admin-code-field{display:flex;gap:10px}
+.admin-code-field input,.admin-form-grid input,.admin-form-grid select{width:100%;min-height:44px;padding:10px 12px;border:1px solid #c9b49d;border-radius:10px;background:#fff;color:#3b200d}
+.admin-form-grid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:16px;margin-bottom:8px}
+.admin-form-grid>div{display:grid;align-content:start;gap:8px}
+.admin-coupon-form>.button{justify-self:start}
+.admin-coupon-list{margin-top:40px}
+.admin-coupon-list>p{margin-top:14px;color:#806c5d}
+.admin-coupon-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid #ddc8af;border-radius:14px;background:#fffaf0}
+.admin-coupon-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
+.admin-coupon-table th,.admin-coupon-table td{padding:13px 14px;border-bottom:1px solid #eadbca;white-space:nowrap}
+.admin-coupon-table th{font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.admin-coupon-table tbody tr:last-child td{border-bottom:0}
+.admin-coupon-table .button{padding:8px 12px}
+:root[data-theme="dark"] .admin-intro,:root[data-theme="dark"] .admin-coupon-list>p{color:var(--muted)}
+:root[data-theme="dark"] .admin-coupon-form,:root[data-theme="dark"] .admin-coupon-table-wrap{background:var(--surface);border-color:var(--theme-border)}
+:root[data-theme="dark"] .admin-code-field input,:root[data-theme="dark"] .admin-form-grid input,:root[data-theme="dark"] .admin-form-grid select{background:#291b15;color:var(--page-text);border-color:var(--theme-border)}
+:root[data-theme="dark"] .admin-coupon-table th,:root[data-theme="dark"] .admin-coupon-table td{border-color:var(--theme-border)}
+@media(max-width:650px){.admin-form-grid{grid-template-columns:1fr}.admin-coupon-form{padding:18px}.admin-coupon-table{font-size:12px}.admin-coupon-table th,.admin-coupon-table td{padding:10px}}
+.admin-section-intro{font-size:13px;line-height:1.6;color:#806c5d}
+.admin-product-form{display:grid;gap:12px;padding:18px;border:1px solid #eadbca;border-radius:14px}
+.admin-product-form h3{font-size:18px}
+.admin-product-form .admin-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-product-form textarea{width:100%;padding:10px 12px;border:1px solid #c9b49d;border-radius:10px;background:#fff;color:#3b200d;resize:vertical}
+.admin-product-description{grid-column:1/-1}
+.admin-form-actions{display:flex;gap:10px;flex-wrap:wrap}
+.admin-product-list{list-style:none;margin:16px 0 0;padding:0}
+.admin-product-list li{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid #eadbca}
+.admin-product-list .admin-product-thumbnail{flex:0 0 52px;width:52px;height:52px;border-radius:8px}
+.admin-image-field{display:grid;justify-items:start;align-content:start;gap:8px}
+.admin-image-label{font-size:14px;font-weight:600}
+.admin-image-picker{position:relative;display:block;width:min(100%,220px);aspect-ratio:1;overflow:hidden;border:1px solid #ddc8af;border-radius:12px;cursor:pointer}
+.admin-image-picker .admin-product-preview-image{width:100%;height:100%;aspect-ratio:auto;background-repeat:no-repeat;transition:filter .2s ease}
+.admin-image-picker>span{position:absolute;inset:auto 0 0;padding:10px;text-align:center;color:#fff;background:#24140dcc;font-size:13px;font-weight:600}
+.admin-image-picker:hover .admin-product-preview-image{filter:brightness(.78)}
+.admin-image-field:focus-within .admin-image-picker{outline:3px solid var(--pink);outline-offset:3px}
+.admin-image-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.admin-image-field small{max-width:300px;font-size:12px;line-height:1.5;color:#806c5d}
+.admin-product-list li>div{display:grid;gap:4px}
+.admin-product-list .admin-product-actions{display:flex;gap:8px;flex-wrap:wrap}
+.admin-product-list li>div span{font-size:12px;color:#806c5d}
+.admin-coupon-products{display:flex;gap:10px 16px;flex-wrap:wrap;margin:4px 0 8px;padding:12px;border:1px solid #c9b49d;border-radius:10px}
+.admin-coupon-products legend{padding:0 6px;font-size:13px;font-weight:600}
+.admin-coupon-products>p{flex-basis:100%;font-size:12px;color:#806c5d}
+.admin-coupon-products label{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.admin-coupon-products-summary{display:block;margin-top:4px;font-size:11px;color:#806c5d}
+:root[data-theme="dark"] .admin-section-intro,:root[data-theme="dark"] .admin-product-list li>div span,:root[data-theme="dark"] .admin-coupon-products>p,:root[data-theme="dark"] .admin-coupon-products-summary{color:var(--muted)}
+:root[data-theme="dark"] .admin-product-form{border-color:var(--theme-border)}
+:root[data-theme="dark"] .admin-product-form textarea,:root[data-theme="dark"] .admin-coupon-products{background:#291b15;color:var(--page-text);border-color:var(--theme-border)}
+:root[data-theme="dark"] .admin-product-list li{border-color:var(--theme-border)}
+@media(max-width:650px){.admin-product-form .admin-form-grid{grid-template-columns:1fr}.admin-product-description{grid-column:auto}.admin-product-list li{align-items:flex-start}}
+
+.checkout-page{min-height:60vh;padding-block:38px 80px}
+.checkout-back{display:inline-block;margin-bottom:24px;font-size:13px;color:#806c5d}
+.checkout-back:hover{color:var(--pink)}
+.checkout-page>h1{font-size:clamp(34px,5vw,52px);margin-top:14px}
+.checkout-intro{margin-top:10px;color:#806c5d;line-height:1.7}
+.checkout-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:28px;align-items:start;margin-top:32px}
+.checkout-order,.checkout-summary,.checkout-empty{padding:24px;border:1px solid #ddc8af;border-radius:20px;background:#fffaf0}
+.checkout-order h2,.checkout-summary h2,.checkout-empty h2{font-size:24px}
+.checkout-items{list-style:none;margin:14px 0 0;padding:0}
+.checkout-items li{display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid #eadbca}
+.checkout-items li>img{width:66px;height:66px;object-fit:cover;border-radius:12px}
+.checkout-item-copy{display:grid;gap:6px}
+.checkout-item-copy>span{font-size:12px;color:#806c5d}
+.checkout-item-total{display:grid;justify-items:end;gap:10px}
+.checkout-item-total>button{background:none;color:#806c5d;font-size:11px;text-decoration:underline}
+.checkout-item-total>button:hover{color:var(--pink)}
+.checkout-order>.clear-cart{margin-top:16px}
+.checkout-summary .promo-form{margin-top:18px}
+.checkout-summary .cart-summary{margin-top:20px;padding:0}
+.checkout-account,.checkout-payment-note{margin-top:14px;color:#806c5d;font-size:12px;line-height:1.6}
+.checkout-submit{width:100%;margin-top:20px}
+.checkout-empty{margin-top:30px;max-width:560px}
+.checkout-empty p{margin:10px 0 18px;color:#806c5d;line-height:1.6}
+.checkout-feedback{margin-top:24px;padding:16px;border:1px solid #74aa79;border-radius:12px;background:#edf8ec;color:#285e2d}
+:root[data-theme="dark"] .checkout-back,:root[data-theme="dark"] .checkout-intro,:root[data-theme="dark"] .checkout-item-copy>span,:root[data-theme="dark"] .checkout-account,:root[data-theme="dark"] .checkout-payment-note,:root[data-theme="dark"] .checkout-empty p{color:var(--muted)}
+:root[data-theme="dark"] .checkout-order,:root[data-theme="dark"] .checkout-summary,:root[data-theme="dark"] .checkout-empty{background:var(--surface);border-color:var(--theme-border)}
+:root[data-theme="dark"] .checkout-items li{border-color:var(--theme-border)}
+@media(max-width:760px){.checkout-layout{grid-template-columns:1fr}.checkout-order,.checkout-summary,.checkout-empty{padding:18px}}
+@media(max-width:420px){.checkout-items li{grid-template-columns:52px minmax(0,1fr) auto;gap:10px}.checkout-items li>img{width:52px;height:52px}.checkout-order,.checkout-summary{padding:14px}}

@@ -50,7 +50,7 @@ class AccountCheckoutTest extends TestCase
         $this->seed();
         $customer = Customer::factory()->create();
         $products = Prece::query()->orderBy('Prece_ID')->take(2)->get();
-        $this->actingAs($customer)->postJson('/api/checkout', ['items' => [['productId' => $products[0]->getKey(), 'quantity' => 2], ['productId' => $products[1]->getKey(), 'quantity' => 1]], 'coupon' => 'sigma15', 'total' => 0.01])->assertCreated()->assertJsonPath('subtotal', 25)->assertJsonPath('total', 21.25)->assertJsonPath('discount', 3.75);
+        $this->actingAs($customer)->postJson('/api/checkout', ['items' => [['productId' => $products[0]->getKey(), 'quantity' => 2], ['productId' => $products[1]->getKey(), 'quantity' => 1]], 'total' => 0.01])->assertCreated()->assertJsonPath('subtotal', 25)->assertJsonPath('total', 25)->assertJsonPath('discount', 0);
         $this->assertSame(23, $products[0]->fresh()->Atlikums);
         $this->assertSame(24, $products[1]->fresh()->Atlikums);
         $this->assertDatabaseCount('Pasutijums', 2);
