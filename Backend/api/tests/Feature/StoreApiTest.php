@@ -61,6 +61,25 @@ class StoreApiTest extends TestCase
             ->assertJsonPath('1.details.nutrition.salt', 0.62);
     }
 
+    public function test_removed_chocolates_are_not_listed(): void
+    {
+        foreach (['Burbuļu sapnis', 'Melleņu bomba', 'Skarbā vafeļu šokolāde', 'Zemeņu krēms'] as $name) {
+            Prece::query()->create([
+                'Nosaukums' => $name,
+                'Cena' => 9,
+                'Atlikums' => 5,
+                'Apraksts' => 'Chocolate',
+                'Tonis' => 'yellow',
+                'Birka' => '',
+            ]);
+        }
+
+        $this->getJson('/api/products')
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.name', 'Zemeņu krēms');
+    }
+
     public function test_order_saves_total_and_decrements_stock(): void
     {
         $product = $this->makeProduct(stock: 5);
