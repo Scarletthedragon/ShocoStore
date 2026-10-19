@@ -16,11 +16,8 @@ import RegisterPage from './components/RegisterPage.vue'
 import CartDrawer from './components/CartDrawer.vue'
 import CheckoutPage from './components/CheckoutPage.vue'
 import ProductDetailDialog from './components/ProductDetailDialog.vue'
-<<<<<<< HEAD
 import AdminPage from './components/AdminPage.vue'
 const products = computed(() => catalog.value.slice(0, 4))
-=======
->>>>>>> 4f8d6ea5e00f7a731f744ce469257a184148a277
 const mango = computed(() => catalog.value.find(item => item.tile === 7))
 const logoutBusy = ref(false)
 const page = ref('home')
@@ -116,7 +113,6 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
         </div>
         <div class="hero-art photo-hero"><span class="floating-label mint-label">atklāj savu spēku ✦</span><img class="hero-photo" :src="heroImage" alt="67 šokolāde — ar 6 un 7 spēku" width="1254" height="1254" /><span class="floating-label art-label">100% tavs moments</span></div></section>
 
-<<<<<<< HEAD
       <section id="produkti" class="flavors" aria-labelledby="flavors-title">
         <div class="flavors-inner content-width">
           <div class="section-heading"><h2 id="flavors-title">Izvēlies savu <span>varoni</span></h2><span class="collection-note">četras garšas ↙</span></div>
@@ -129,8 +125,6 @@ onBeforeUnmount(() => { clearTimeout(toastTimer); window.removeEventListener('ha
         </div>
       </section>
 
-=======
->>>>>>> 4f8d6ea5e00f7a731f744ce469257a184148a277
       <section id="jaunums" class="spotlight content-width" aria-labelledby="mango-title">
         <div class="spotlight-copy"><span class="handwritten">✦ mazliet saules, daudz garšas</span><h2 id="mango-title">KŪSTOŠAIS MANGO</h2><p>Saulains mango. Maiga baltā šokolāde. Tavs tropiskais piedzīvojums katrā kumosā.</p><button class="button pink-button" :disabled="!mango || mango.stock <= 0" @click="add(mango)">{{ mango ? `Ķer sauli · ${money(mango.price)} ↗` : 'Drīzumā' }}</button><WishButton v-if="mango" class="spotlight-wish" :product="mango" /><span class="spotlight-note">Vasaras sajūta<br />jebkurā gadalaikā.</span></div>
         <div class="mango-art photo-mango"><span class="new-label">New drop ↗</span><ProductImage :tile="7" label="Kūstošais mango šokolādes iepakojums" /></div></section>
