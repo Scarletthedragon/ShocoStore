@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Pasutijums;
 use App\Models\Customer;
+use App\Models\Pasutijums;
 use App\Models\Prece;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -108,7 +108,7 @@ class StoreApiTest extends TestCase
             'price' => 6.50,
             'stock' => 4,
             'tone' => 'berry',
-            'image' => UploadedFile::fake()->image('first.png'),
+            'image' => UploadedFile::fake()->image('first.png')->size(4096),
         ]);
 
         $created->assertCreated()
@@ -133,6 +133,22 @@ class StoreApiTest extends TestCase
         $this->assertNotSame($oldImagePath, $newImagePath);
         Storage::disk('public')->assertMissing($oldImagePath);
         Storage::disk('public')->assertExists($newImagePath);
+    }
+
+    public function test_admin_cannot_save_product_when_selected_image_was_not_received(): void
+    {
+        $admin = Customer::factory()->create(['Epasts' => 'admin@example.com']);
+
+        $this->actingAs($admin)->postJson('/api/products', [
+            'name' => 'Chocolate with missing image',
+            'price' => 6.50,
+            'stock' => 4,
+            'tone' => 'berry',
+            'imageSelected' => '1',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('image');
+
+        $this->assertDatabaseMissing('Prece', ['Nosaukums' => 'Chocolate with missing image']);
     }
 
     public function test_admin_can_delete_a_chocolate_and_its_image(): void

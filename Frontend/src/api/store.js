@@ -29,6 +29,7 @@ function productFormData(product) {
   for (const [key, value] of Object.entries(product)) {
     if (value !== undefined && value !== null) data.append(key, value)
   }
+  data.append('imageSelected', product.image ? '1' : '0')
   return data
 }
 export const saveProduct = product => mutate('/products', productFormData(product))

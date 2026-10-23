@@ -6,8 +6,8 @@ use App\Models\Pasutijums;
 use App\Models\Prece;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class StoreController extends Controller
 {
@@ -80,7 +80,10 @@ class StoreController extends Controller
             'description' => ['nullable', 'string', 'max:1000'],
             'tone' => [$required, 'nullable', 'string', 'max:25'],
             'tag' => ['nullable', 'string', 'max:50'],
-            'image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'imageSelected' => ['sometimes', 'boolean'],
+            'image' => ['required_if:imageSelected,1', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ], [
+            'image.required_if' => 'Neizdevās saņemt izvēlēto attēlu. Pārbaudi servera augšupielādes limitu un mēģini vēlreiz.',
         ]);
     }
 

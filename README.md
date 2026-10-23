@@ -40,7 +40,7 @@ npm run backend
 npm run dev
 ```
 
-Laravel API būs pieejams `http://127.0.0.1:8000`, bet Vite priekšskatījums — tā norādītajā lokālajā adresē. Vite pārsūta `/api` pieprasījumus Laravel serverim.
+Laravel API būs pieejams `http://127.0.0.1:8000`, bet Vite priekšskatījums — tā norādītajā lokālajā adresē. Vite pārsūta `/api` pieprasījumus Laravel serverim. Backend startēšanas komanda iestata PHP augšupielādes limitu tā, lai var pievienot attēlus līdz lietotnē atļautajiem 5 MB.
 
 Shēmu un testa/preču datus pārvalda Laravel migrācijas un sējējs — SQL failus manuāli importēt nevajag. Lai pilnībā atiestatītu lokālo datubāzi un no jauna ielādētu katalogu, no `Backend/api` mapes palaid `php artisan migrate:fresh --seed`; šī komanda dzēš visus pašreizējos datubāzes datus.
 

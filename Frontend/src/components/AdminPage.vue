@@ -41,9 +41,15 @@ function clearImagePreview() {
 function selectProductImage(event) {
   clearImagePreview()
   const image = event.target.files?.[0] ?? null
+  event.target.value = ''
+  if (image && image.size > 5 * 1024 * 1024) {
+    productForm.value.image = null
+    error.value = 'Attēla izmērs nedrīkst pārsniegt 5 MB.'
+    return
+  }
   productForm.value.image = image
   if (image) selectedImagePreview.value = URL.createObjectURL(image)
-  event.target.value = ''
+  error.value = ''
 }
 
 function tileForTone(tone) {
