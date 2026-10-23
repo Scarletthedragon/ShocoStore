@@ -273,3 +273,32 @@ html,body{background:var(--page-bg);color:var(--page-text)}
 :root[data-theme="dark"] .checkout-items li{border-color:var(--theme-border)}
 @media(max-width:760px){.checkout-layout{grid-template-columns:1fr}.checkout-order,.checkout-summary,.checkout-empty{padding:18px}}
 @media(max-width:420px){.checkout-items li{grid-template-columns:52px minmax(0,1fr) auto;gap:10px}.checkout-items li>img{width:52px;height:52px}.checkout-order,.checkout-summary{padding:14px}}
+/* Keep admin grids and native form controls within the page width. */
+.admin-page{min-width:0;max-width:1120px}
+.admin-page :is(.admin-coupon-form,.admin-product-form,.admin-form-grid,.admin-form-grid>div,.admin-coupon-list,.admin-coupon-table-wrap){min-width:0;max-width:100%}
+.admin-form-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.5fr)}
+.admin-page :is(input,select,textarea){min-width:0;max-width:100%}
+.admin-code-field input{flex:1;min-width:0}
+.admin-code-field button{flex-shrink:0}
+.admin-coupon-products{min-inline-size:0;max-width:100%}
+.admin-coupon-products label{max-width:100%;overflow-wrap:anywhere}
+.admin-product-list li{display:grid;grid-template-columns:52px minmax(0,1fr) auto}
+.admin-product-list li>div{min-width:0;overflow-wrap:anywhere}
+.admin-coupon-products-summary{max-width:260px;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:650px){
+  .admin-page{padding-block:28px 48px}
+  .admin-form-grid{grid-template-columns:minmax(0,1fr)}
+  .admin-product-form{padding:14px}
+  .admin-product-list .admin-product-actions{grid-column:2;justify-content:flex-start}
+}
+@media(max-width:380px){.admin-code-field{flex-wrap:wrap}.admin-code-field input{flex-basis:100%}}
+.admin-page .admin-form-grid .admin-image-input{width:1px;height:1px;min-width:0;min-height:0;max-width:1px;padding:0;border:0}
+
+/* Fill the viewport and keep the footer below short pages. */
+html{background:var(--page-bg)}
+body,#app{min-height:100vh;min-height:100dvh;background:var(--page-bg)}
+.storefront{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;background:var(--page-bg)}
+.storefront>.site-header,.storefront>.site-footer{flex-shrink:0}
+.storefront>.site-footer{margin-top:auto}
+.checkout-back{display:table}
+.checkout-empty .checkout-confirmation{margin-top:0;line-height:1.8;overflow-wrap:anywhere}
