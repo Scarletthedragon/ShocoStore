@@ -78,16 +78,16 @@ async function placeOrder() {
 <template>
   <main class="checkout-page content-width">
     <a class="checkout-back" href="#/veikals">← Turpināt iepirkšanos</a>
-    <span class="eyebrow">pēdējais solis līdz šokolādei</span>
-    <h1>Noformēt pasūtījumu <span class="pink-text">♡</span></h1>
-    <p class="checkout-intro">Pārbaudi grozu un apstiprini pasūtījumu. Tiešsaistes apmaksa un piegāde vēl nav pieejama.</p>
+    <span v-if="!orderMessage" class="eyebrow">pēdējais solis līdz šokolādei</span>
+    <h1>{{ orderMessage ? 'Paldies par pasūtījumu!' : 'Noformēt pasūtījumu' }} <span class="pink-text">♡</span></h1>
+    <p v-if="!orderMessage" class="checkout-intro">Pārbaudi grozu un apstiprini pasūtījumu. Tiešsaistes apmaksa un piegāde vēl nav pieejama.</p>
 
-    <p v-if="orderMessage" class="checkout-feedback" role="status">{{ orderMessage }}</p>
     <p v-if="orderError" class="form-message" role="alert">{{ orderError }}</p>
 
     <div v-if="!items.length" class="checkout-empty">
-      <h2>{{ orderMessage ? 'Paldies par pasūtījumu!' : 'Grozs ir tukšs' }}</h2>
-      <p>{{ orderMessage ? 'Pasūtījums ir saglabāts. Apmaksa nav veikta.' : 'Pievieno grozam šokolādi, lai varētu noformēt pasūtījumu.' }}</p>
+      <h2 v-if="!orderMessage">Grozs ir tukšs</h2>
+      <p v-if="orderMessage" class="checkout-confirmation" role="status">{{ orderMessage }}</p>
+      <p v-else>Pievieno grozam šokolādi, lai varētu noformēt pasūtījumu.</p>
       <a class="button pink-button" href="#/veikals">Uz veikalu ↗</a>
     </div>
 
