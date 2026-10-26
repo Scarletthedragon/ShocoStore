@@ -19,8 +19,9 @@ async function submit() {
   if (busy.value) return
   busy.value = true; message.value = ''
   try {
-    user.value = (await register({ name: name.value.trim(), email: email.value, password: password.value, password_confirmation: confirmation.value })).user
-    window.location.hash = '#/veikals'
+    const result = await register({ name: name.value.trim(), email: email.value, password: password.value, password_confirmation: confirmation.value })
+    user.value = { ...result.user, verificationDeliveryFailed: result.verificationSent === false }
+    window.location.hash = '#/profils'
   } catch (error) { message.value = error.message }
   finally { busy.value = false; password.value = ''; confirmation.value = ''; showPassword.value = false }
 }

@@ -15,12 +15,15 @@ Route::middleware('web')->group(function (): void {
     Route::get('/auth/csrf', [AuthController::class, 'csrf']);
     Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::get('/auth/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+        ->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
     Route::middleware('auth')->group(function (): void {
         Route::get('/auth/user', [AuthController::class, 'user']);
         Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
+        Route::post('/auth/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:1,1');
         Route::get('/orders', [StoreController::class, 'orders']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
-        Route::post('/checkout', [CouponController::class, 'checkout'])->middleware('throttle:10,1');
+        Route::post('/checkout', [CouponController::class, 'checkout'])->middleware(['verified', 'throttle:10,1']);
         Route::middleware('admin')->group(function (): void {
             Route::post('/products', [StoreController::class, 'storeProduct']);
             Route::put('/products/{product}', [StoreController::class, 'updateProduct']);

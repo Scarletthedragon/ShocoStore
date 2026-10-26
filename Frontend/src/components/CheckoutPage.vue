@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import ProductImage from './ProductImage.vue'
 import { checkout, validateCoupon } from '../api/store.js'
 import { user } from '../api/state.js'
+import EmailVerificationNotice from './EmailVerificationNotice.vue'
 import { money } from '../data/products.js'
 
 const props = defineProps({ items: { type: Array, required: true } })
@@ -51,6 +52,10 @@ async function placeOrder() {
   termsError.value = ''
   if (!user.value) {
     emit('login')
+    return
+  }
+  if (!user.value.emailVerified) {
+    orderError.value = 'Pirms pasūtījuma veikšanas apstiprini savu e-pasta adresi.'
     return
   }
 
@@ -148,6 +153,7 @@ function closeTerms() {
           <p v-if="coupon"><span>Atlaide ({{ coupon.discountPercent }}%)</span><span>−{{ money(discount) }}</span></p>
           <p class="cart-total"><strong>Kopā</strong><strong>{{ money(subtotal - discount) }}</strong></p>
         </div>
+        <EmailVerificationNotice v-if="user && !user.emailVerified" />
         <p class="checkout-account" v-if="user">Pasūtījums tiks piesaistīts kontam {{ user.email }}.</p>
         <p class="checkout-account" v-else>Lai saglabātu pasūtījumu, vispirms pieslēdzies savam kontam.</p>
         <div class="checkout-terms">
@@ -158,7 +164,7 @@ function closeTerms() {
           </div>
         </div>
         <p v-if="termsError" id="checkout-terms-error" class="checkout-terms-error" role="alert">{{ termsError }}</p>
-        <button class="button pink-button checkout-submit" :disabled="busy" @click="placeOrder">
+        <button class="button pink-button checkout-submit" :disabled="busy || (user && !user.emailVerified)" @click="placeOrder">
           {{ busy ? 'Saglabā pasūtījumu…' : user ? 'Apstiprināt pasūtījumu ↗' : 'Pieslēgties un pasūtīt ↗' }}
         </button>
         <p class="checkout-payment-note">Pasūtījums tiks saglabāts veikalā. Tiešsaistes apmaksa netiek veikta.</p>

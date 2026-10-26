@@ -11,6 +11,6 @@ class CustomerFactory extends Factory
 
     public function definition(): array
     {
-        return ['Vards' => fake()->name(), 'Epasts' => fake()->unique()->safeEmail(), 'Parole' => 'password123'];
+        return ['Vards' => fake()->name(), 'Epasts' => fake()->unique()->safeEmail(), 'Parole' => 'password123', 'email_verified_at' => now()];
     }
 }
