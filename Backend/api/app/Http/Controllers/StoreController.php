@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 
 class StoreController extends Controller
 {
+    private ?array $catalog = null;
+
     public function products(): JsonResponse
     {
         $products = Prece::query()
@@ -150,8 +152,8 @@ class StoreController extends Controller
 
     private function productPayload(Prece $product): array
     {
-        $catalog = json_decode(file_get_contents(database_path('seeders/catalog.json')), true, flags: JSON_THROW_ON_ERROR);
-        $visual = collect($catalog)->first(fn (array $item) => $item['name'] === $product->Nosaukums || $item['id'] === $product->Tonis) ?? [];
+        $this->catalog ??= json_decode(file_get_contents(database_path('seeders/catalog.json')), true, flags: JSON_THROW_ON_ERROR);
+        $visual = collect($this->catalog)->first(fn (array $item) => $item['name'] === $product->Nosaukums || $item['id'] === $product->Tonis) ?? [];
 
         return [
             'id' => (string) $product->Prece_ID,

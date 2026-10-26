@@ -26,7 +26,7 @@ export const checkout = order => mutate('/checkout', order)
 export const validateCoupon = (code, productIds) => request('/coupons/validate', { params: { code, productIds } })
 export const getAdminCoupons = () => request('/admin/coupons')
 export const createAdminCoupon = coupon => mutate('/admin/coupons', coupon)
-export const revokeAdminCoupon = id => request(`/admin/coupons/${id}`, { method: 'DELETE' })
+export const revokeAdminCoupon = id => mutate(`/admin/coupons/${id}`, undefined, 'DELETE')
 function productFormData(product) {
   const data = new FormData()
   for (const [key, value] of Object.entries(product)) {
@@ -39,10 +39,6 @@ export const saveProduct = product => mutate('/products', productFormData(produc
 export async function updateProduct(id, product) {
   const data = productFormData(product)
   data.append('_method', 'PUT')
-  const { token } = await request('/auth/csrf')
-  return request(`/products/${id}`, { method: 'POST', data, headers: { 'X-CSRF-TOKEN': token } })
+  return mutate(`/products/${id}`, data)
 }
-export const deleteProduct = async id => {
-  const { token } = await request('/auth/csrf')
-  return request(`/products/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': token } })
-}
+export const deleteProduct = id => mutate(`/products/${id}`, undefined, 'DELETE')

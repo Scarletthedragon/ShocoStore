@@ -31,4 +31,11 @@ class DiscountCoupon extends Model
     {
         return $this->belongsToMany(Prece::class, 'discount_coupon_products', 'discount_coupon_id', 'Prece_ID', 'id', 'Prece_ID');
     }
+
+    public function isAvailable(): bool
+    {
+        return $this->active
+            && $this->expires_at->isFuture()
+            && ($this->usage_limit === null || $this->usage_count < $this->usage_limit);
+    }
 }

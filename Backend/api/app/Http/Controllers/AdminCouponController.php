@@ -57,7 +57,7 @@ class AdminCouponController extends Controller
         ]);
         $coupon = DiscountCoupon::query()->with('products:Prece_ID')->where('code', $data['code'])->first();
 
-        if (! $coupon || ! $this->isAvailable($coupon)) {
+        if (! $coupon || ! $coupon->isAvailable()) {
             throw ValidationException::withMessages(['coupon' => 'Šis atlaižu kods nav derīgs vai ir beidzies.']);
         }
 
@@ -74,12 +74,5 @@ class AdminCouponController extends Controller
             'discountPercent' => (float) $coupon->discount_percent,
             'productIds' => $eligibleProductIds,
         ]);
-    }
-
-    private function isAvailable(DiscountCoupon $coupon): bool
-    {
-        return $coupon->active
-            && $coupon->expires_at->isFuture()
-            && ($coupon->usage_limit === null || $coupon->usage_count < $coupon->usage_limit);
     }
 }

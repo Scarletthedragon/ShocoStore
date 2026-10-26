@@ -34,7 +34,7 @@ class CouponController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (! $coupon || ! $this->isAvailable($coupon)) {
+                if (! $coupon || ! $coupon->isAvailable()) {
                     throw ValidationException::withMessages([
                         'coupon' => 'Šis atlaižu kods vairs nav derīgs.',
                     ]);
@@ -111,12 +111,5 @@ class CouponController extends Controller
         });
 
         return response()->json($result, 201);
-    }
-
-    private function isAvailable(DiscountCoupon $coupon): bool
-    {
-        return $coupon->active
-            && $coupon->expires_at->isFuture()
-            && ($coupon->usage_limit === null || $coupon->usage_count < $coupon->usage_limit);
     }
 }

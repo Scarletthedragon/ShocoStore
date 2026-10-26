@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
 import logo from './assets/images/choco.png'
 import heroImage from './assets/images/hero-67.jpeg'
 import { theme, toggleTheme } from './theme.js'
@@ -16,8 +16,29 @@ import RegisterPage from './components/RegisterPage.vue'
 import CartDrawer from './components/CartDrawer.vue'
 import CheckoutPage from './components/CheckoutPage.vue'
 import ProductDetailDialog from './components/ProductDetailDialog.vue'
-import AdminPage from './components/AdminPage.vue'
 import ProfilePage from './components/ProfilePage.vue'
+const AdminPage = defineAsyncComponent(() => import('./components/AdminPage.vue'))
+const pageByHash = {
+  '#/pasutijums': 'checkout',
+  '#/noformesana': 'checkout',
+  '#/profils': 'profile',
+  '#/admin': 'admin',
+  '#/velmes': 'wishlist',
+  '#/veikals': 'shop',
+  '#/registracija': 'register',
+  '#/par-mums': 'about',
+  '#par-mums': 'about',
+}
+const titleByPage = {
+  home: 'Šokolāde ar raksturu',
+  checkout: 'Noformēt pasūtījumu',
+  profile: 'Mans profils',
+  admin: 'Atlaižu kodi',
+  wishlist: 'Vēlmju saraksts',
+  shop: 'Šokolādes veikals',
+  register: 'Reģistrēties',
+  about: 'Mūsu stāsts',
+}
 const products = computed(() => catalog.value.slice(0, 4))
 const mango = computed(() => catalog.value.find(item => item.tile === 7))
 const logoutBusy = ref(false)
@@ -32,9 +53,14 @@ function loadCart() {
   try {
     const saved = JSON.parse(localStorage.getItem('shoco-cart-v1') || '[]')
     if (!Array.isArray(saved)) return []
+    const quantities = new Map()
+    for (const item of saved) {
+      if (!item || !Number.isInteger(item.quantity) || item.quantity <= 0) continue
+      quantities.set(item.id, Math.min(99, (quantities.get(item.id) || 0) + item.quantity))
+    }
     return catalog.value.flatMap(product => {
-      const quantity = saved.filter(item => item && item.id === product.id && Number.isInteger(item.quantity) && item.quantity > 0).reduce((sum,item) => sum + item.quantity, 0)
-      return quantity ? [{ ...product, quantity: Math.min(quantity, 99) }] : []
+      const quantity = quantities.get(product.id)
+      return quantity ? [{ ...product, quantity }] : []
     })
   } catch { return [] }
 }
@@ -71,9 +97,9 @@ async function syncPage() {
   const legacyLogin = hash === '#/login'
   if (legacyLogin) { history.replaceState(null, '', '#/sakums'); hash = '#/sakums' }
   loginModal.value?.close()
-  page.value = ['#/pasutijums', '#/noformesana'].includes(hash) ? 'checkout' : hash === '#/profils' ? 'profile' : hash === '#/admin' ? 'admin' : hash === '#/velmes' ? 'wishlist' : hash === '#/veikals' ? 'shop' : hash === '#/registracija' ? 'register' : ['#/par-mums', '#par-mums'].includes(hash) ? 'about' : 'home'
+  page.value = Object.hasOwn(pageByHash, hash) ? pageByHash[hash] : 'home'
   document.documentElement.lang = 'lv'
-  document.title = `${page.value === 'profile' ? 'Mans profils' : page.value === 'checkout' ? 'Noformēt pasūtījumu' : page.value === 'admin' ? 'Atlaižu kodi' : page.value === 'wishlist' ? 'Vēlmju saraksts' : page.value === 'about' ? 'Mūsu stāsts' : page.value === 'shop' ? 'Šokolādes veikals' : page.value === 'register' ? 'Reģistrēties' : 'Šokolāde ar raksturu'} | ShocoStore`
+  document.title = `${titleByPage[page.value]} | ShocoStore`
   await nextTick()
   if (legacyLogin) loginModal.value?.open()
   const target = ['#jaunums', '#par-mums', '#produkti'].includes(hash) ? document.getElementById(hash.slice(1)) : null
