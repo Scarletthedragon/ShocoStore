@@ -29,14 +29,12 @@ async function submit() {
 <template>
   <main class="login-page registration-page content-width">
     <section class="login-art">
-      <span class="eyebrow">join the sweet side</span>
       <h2>Tavs konts.<br />Tava <span>garša.</span></h2>
       <ProductImage :tile="0" label="Zemeņu krēma šokolāde" />
       <p>Saldie mirkļi sākas šeit. ♡</p>
     </section>
     <section class="login-form-panel">
       <a href="#/veikals" class="back-link">← Atpakaļ pie šokolādes</a>
-      <span class="newsletter-tag">Your sweet era starts here</span>
       <h1>Reģistrējies <span class="pink-text">♡</span></h1>
       <p>Izveido savu Shoco kontu.</p>
       <form @submit.prevent="submit">

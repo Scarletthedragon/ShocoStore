@@ -25,7 +25,6 @@ defineExpose({ open, close })
   <dialog ref="dialog" class="login-dialog" aria-labelledby="login-title" @close="reset" @click="event => { if (event.target === dialog) close() }">
     <section class="login-form-panel login-modal-content">
       <button class="login-close" type="button" aria-label="Aizvērt pieteikšanos" @click="close">✕</button>
-      <span class="newsletter-tag">Sweet to see you</span>
       <h1 id="login-title">Čau, atkal! <span class="pink-text">♡</span></h1>
       <p>Piesakies savā Shoco kontā.</p>
       <form @submit.prevent="submit">
