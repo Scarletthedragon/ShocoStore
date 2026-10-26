@@ -14,6 +14,9 @@ const orderError = ref('')
 const orderMessage = ref('')
 const applying = ref(false)
 const busy = ref(false)
+const termsAccepted = ref(false)
+const termsError = ref('')
+const termsDialog = ref(null)
 
 const subtotal = computed(() => props.items.reduce((sum, item) => sum + item.price * item.quantity, 0))
 const discount = computed(() => {
@@ -41,6 +44,11 @@ async function applyCoupon() {
 
 async function placeOrder() {
   if (busy.value || !props.items.length) return
+  if (!termsAccepted.value) {
+    termsError.value = 'Lai turpinātu, izlasi un apstiprini pasūtījuma noteikumus.'
+    return
+  }
+  termsError.value = ''
   if (!user.value) {
     emit('login')
     return
@@ -72,6 +80,14 @@ async function placeOrder() {
   } finally {
     busy.value = false
   }
+}
+
+function openTerms() {
+  termsDialog.value?.showModal()
+}
+
+function closeTerms() {
+  termsDialog.value?.close()
 }
 </script>
 
@@ -134,11 +150,54 @@ async function placeOrder() {
         </div>
         <p class="checkout-account" v-if="user">Pasūtījums tiks piesaistīts kontam {{ user.email }}.</p>
         <p class="checkout-account" v-else>Lai saglabātu pasūtījumu, vispirms pieslēdzies savam kontam.</p>
+        <div class="checkout-terms">
+          <input id="checkout-terms" v-model="termsAccepted" type="checkbox" :disabled="busy" :aria-describedby="termsError ? 'checkout-terms-error' : undefined" @change="termsError = ''" />
+          <div>
+            <label for="checkout-terms">Esmu izlasījis un iepazinies ar&nbsp;</label>
+            <button class="checkout-terms-link" type="button" @click="openTerms">pasūtījuma noteikumiem</button>.
+          </div>
+        </div>
+        <p v-if="termsError" id="checkout-terms-error" class="checkout-terms-error" role="alert">{{ termsError }}</p>
         <button class="button pink-button checkout-submit" :disabled="busy" @click="placeOrder">
           {{ busy ? 'Saglabā pasūtījumu…' : user ? 'Apstiprināt pasūtījumu ↗' : 'Pieslēgties un pasūtīt ↗' }}
         </button>
         <p class="checkout-payment-note">Pasūtījums tiks saglabāts veikalā. Tiešsaistes apmaksa netiek veikta.</p>
       </aside>
     </div>
+
+    <dialog ref="termsDialog" class="checkout-terms-dialog" aria-labelledby="checkout-terms-title" @click="event => { if (event.target === termsDialog) closeTerms() }">
+      <button class="checkout-terms-close" type="button" aria-label="Aizvērt noteikumus" @click="closeTerms">×</button>
+      <header class="checkout-terms-header">
+        <p class="checkout-terms-eyebrow">Informācija pirms pasūtījuma</p>
+        <h2 id="checkout-terms-title">Pasūtījuma noteikumi</h2>
+        <p class="checkout-terms-intro">Šeit apkopota informācija par pasūtījuma iesniegšanu un pašreiz pieejamo pakalpojumu apjomu.</p>
+      </header>
+      <div class="checkout-terms-body" tabindex="0" aria-label="Pasūtījuma noteikumi">
+        <section>
+          <h3>1. Vispārīgie noteikumi</h3>
+          <p>Šie noteikumi apraksta pasūtījuma noformēšanu ShocoStore vietnē. Pasūtījumu var iesniegt pēc pieslēgšanās lietotāja kontam.</p>
+        </section>
+        <section>
+          <h3>2. Pasūtījuma iesniegšana</h3>
+          <p>Pirms apstiprināšanas pārbaudi izvēlētās preces, to daudzumu un kopsavilkumā norādīto summu. Pasūtījums tiek saglabāts un piesaistīts kontam pēc veiksmīgas apstrādes. Saglabātajam pasūtījumam tiek piešķirts statuss “gaida”.</p>
+        </section>
+        <section>
+          <h3>3. Preču pieejamība</h3>
+          <p>Apstiprinot pasūtījumu, sistēma pārbauda preču atlikumu. Ja prece vajadzīgajā daudzumā vairs nav pieejama, pasūtījumu nevarēs apstiprināt. Pēc veiksmīgas pasūtījuma reģistrēšanas pasūtītais daudzums tiek atskaitīts no preču atlikuma.</p>
+        </section>
+        <section>
+          <h3>4. Cenas un atlaižu kodi</h3>
+          <p>Preču cenas un pasūtījuma kopsumma tiek parādīta pirms apstiprināšanas. Atlaižu kods tiek piemērots, ja sistēma to atzīst par derīgu un atlaide ir redzama kopsavilkumā. Atsevišķi kodi var attiekties tikai uz noteiktām precēm.</p>
+        </section>
+        <section>
+          <h3>5. Apmaksa un piegāde</h3>
+          <p>Šobrīd vietnē nav pieejama tiešsaistes apmaksa vai piegādes noformēšana. Pasūtījuma saglabāšana nav uzskatāma par apmaksu un neapstiprina preču piegādi.</p>
+        </section>
+        <section>
+          <h3>6. Lietotāja konts</h3>
+          <p>Pasūtījums tiek piesaistīts kontam, kurā esi pieslēdzies. Pirms apstiprināšanas pārliecinies, ka izmanto pareizo kontu.</p>
+        </section>
+      </div>
+    </dialog>
   </main>
 </template>

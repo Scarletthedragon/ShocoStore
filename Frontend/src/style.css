@@ -27,7 +27,9 @@
 .password-hint{font-size:10px;line-height:1.6;color:#927c67}
 .registration-page{padding-top:30px}
 .registration-page .login-art{align-self:center}
+.registration-page .login-art>p{font-size:14px}
 .registration-page .login-form-panel h1{font-size:40px}
+.registration-page .login-form-panel .back-link{font-size:16px;color:var(--brown);font-weight:600;margin-bottom:26px}
 .registration-page .login-form-panel form{margin-top:18px}
 html:has(dialog[open]){overflow:hidden}
 @media(max-width:560px){.login-modal-content{padding:34px 23px 26px}.login-modal-content h1{font-size:34px}.login-dialog{border-radius:28px}.registration-page .login-form-panel h1{font-size:36px}}
@@ -264,12 +266,36 @@ html,body{background:var(--page-bg);color:var(--page-text)}
 .checkout-summary .promo-form{margin-top:18px}
 .checkout-summary .cart-summary{margin-top:20px;padding:0}
 .checkout-account,.checkout-payment-note{margin-top:14px;color:#806c5d;font-size:12px;line-height:1.6}
+.checkout-terms{display:flex;align-items:flex-start;gap:10px;margin-top:18px;font-size:13px;line-height:1.6}
+.checkout-terms input{width:18px;height:18px;flex:0 0 auto;margin:2px 0 0;accent-color:var(--pink)}
+.checkout-terms-link{padding:0;background:none;color:var(--brown);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.checkout-terms-link:hover{color:var(--pink)}
+.checkout-terms-error{margin-top:7px;color:#b42318;font-size:12px}
 .checkout-submit{width:100%;margin-top:20px}
+.checkout-terms-dialog{position:fixed;inset:0;flex-direction:column;width:min(680px,calc(100% - 32px));max-height:min(88vh,760px);margin:auto;padding:32px;border:1px solid #ddc8af;border-radius:18px;background:var(--cream);color:var(--brown);overflow:hidden;box-shadow:0 24px 80px #26130b30}
+.checkout-terms-dialog[open]{display:flex}
+.checkout-terms-dialog::backdrop{background:#26130bb3;backdrop-filter:blur(3px)}
+.checkout-terms-header{padding:0 48px 20px 0;border-bottom:1px solid #ddc8af}
+.checkout-terms-eyebrow{font-size:11px!important;font-weight:700;text-transform:uppercase;color:#806c5d}
+.checkout-terms-dialog h2{margin-top:6px;font-size:30px;line-height:1.2}
+.checkout-terms-dialog p{font-size:15px;line-height:1.75}
+.checkout-terms-dialog .checkout-terms-intro{margin-top:10px;color:#806c5d}
+.checkout-terms-body{min-height:0;margin:0 -8px 0 0;padding:4px 16px 4px 0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-color:#b69b7b transparent;scrollbar-width:thin}
+.checkout-terms-body section{padding:18px 0;border-bottom:1px solid #ddc8af}
+.checkout-terms-body h3{font-size:17px;line-height:1.4}
+.checkout-terms-body p{margin-top:8px}
+.checkout-terms-close{position:absolute;top:24px;right:24px;width:40px;height:40px;border:1px solid #ddc8af;border-radius:50%;background:#fffaf0;color:var(--brown);font-size:22px}
+.checkout-terms-done{flex:0 0 auto;align-self:flex-start;margin-top:20px}
 .checkout-empty{margin-top:30px;max-width:560px}
 .checkout-empty p{margin:10px 0 18px;color:#806c5d;line-height:1.6}
 .checkout-feedback{margin-top:24px;padding:16px;border:1px solid #74aa79;border-radius:12px;background:#edf8ec;color:#285e2d}
 :root[data-theme="dark"] .checkout-back,:root[data-theme="dark"] .checkout-intro,:root[data-theme="dark"] .checkout-item-copy>span,:root[data-theme="dark"] .checkout-account,:root[data-theme="dark"] .checkout-payment-note,:root[data-theme="dark"] .checkout-empty p{color:var(--muted)}
 :root[data-theme="dark"] .checkout-order,:root[data-theme="dark"] .checkout-summary,:root[data-theme="dark"] .checkout-empty{background:var(--surface);border-color:var(--theme-border)}
+:root[data-theme="dark"] .checkout-terms-dialog{background:var(--surface);color:var(--page-text);border-color:var(--theme-border)}
+:root[data-theme="dark"] .checkout-terms-header,:root[data-theme="dark"] .checkout-terms-body section{border-color:var(--theme-border)}
+:root[data-theme="dark"] .checkout-terms-eyebrow,:root[data-theme="dark"] .checkout-terms-intro{color:var(--muted)}
+:root[data-theme="dark"] .checkout-terms-link{color:var(--page-text)}
+:root[data-theme="dark"] .checkout-terms-close{background:var(--surface);color:var(--page-text);border-color:var(--theme-border)}
 :root[data-theme="dark"] .checkout-items li{border-color:var(--theme-border)}
 @media(max-width:760px){.checkout-layout{grid-template-columns:1fr}.checkout-order,.checkout-summary,.checkout-empty{padding:18px}}
 @media(max-width:420px){.checkout-items li{grid-template-columns:52px minmax(0,1fr) auto;gap:10px}.checkout-items li>img{width:52px;height:52px}.checkout-order,.checkout-summary{padding:14px}}
