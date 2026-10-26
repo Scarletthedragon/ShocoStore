@@ -10,9 +10,9 @@ async function request(path, options = {}) {
     throw error
   }
 }
-async function mutate(path, data) {
+async function mutate(path, data, method = 'POST') {
   const { token } = await request('/auth/csrf')
-  return request(path, { method: 'POST', data, headers: { 'X-CSRF-TOKEN': token } })
+  return request(path, { method, data, headers: { 'X-CSRF-TOKEN': token } })
 }
 export const getProducts = () => request('/products')
 export const getUser = () => request('/auth/user')
@@ -20,6 +20,7 @@ export const login = credentials => mutate('/auth/login', credentials)
 export const register = details => mutate('/auth/register', details)
 export const logout = () => mutate('/auth/logout')
 export const updateProfile = details => mutate('/auth/profile', details)
+export const deleteAccount = details => mutate('/auth/account', details, 'DELETE')
 export const resendVerification = () => mutate('/auth/email/resend')
 export const checkout = order => mutate('/checkout', order)
 export const validateCoupon = (code, productIds) => request('/coupons/validate', { params: { code, productIds } })

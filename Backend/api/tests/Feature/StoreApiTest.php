@@ -245,11 +245,12 @@ class StoreApiTest extends TestCase
     public function test_order_saves_total_and_decrements_stock(): void
     {
         $product = $this->makeProduct(stock: 5);
+        $customer = Customer::factory()->create(['Vards' => 'Test buyer']);
 
-        $this->postJson('/api/orders', [
+        $this->actingAs($customer)->postJson('/api/orders', [
             'productId' => (string) $product->Prece_ID,
             'quantity' => 2,
-            'customerName' => 'Test buyer',
+            'customerName' => 'Spoofed buyer',
         ])
             ->assertCreated()
             ->assertJsonPath('total', 10.5)
@@ -257,6 +258,7 @@ class StoreApiTest extends TestCase
 
         $this->assertSame(3, $product->fresh()->Atlikums);
         $this->assertDatabaseHas('Pasutijums', [
+            'Lietotajs_ID' => $customer->getKey(),
             'Prece_ID' => $product->Prece_ID,
             'Daudzums' => 2,
             'Kopeja_cena' => 10.50,
@@ -268,7 +270,7 @@ class StoreApiTest extends TestCase
     {
         $product = $this->makeProduct(stock: 1);
 
-        $this->postJson('/api/orders', [
+        $this->actingAs(Customer::factory()->create())->postJson('/api/orders', [
             'productId' => (string) $product->Prece_ID,
             'quantity' => 2,
         ])

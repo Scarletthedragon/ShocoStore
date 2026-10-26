@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { user } from '../api/state.js'
-import { updateProfile } from '../api/store.js'
+import { deleteAccount, updateProfile } from '../api/store.js'
 import EmailVerificationNotice from './EmailVerificationNotice.vue'
 
 defineEmits(['login'])
@@ -10,6 +10,30 @@ const email = ref('')
 const busy = ref(false)
 const error = ref('')
 const success = ref('')
+const showDeleteForm = ref(false)
+const deletePassword = ref('')
+const deleteConfirmed = ref(false)
+const deleteError = ref('')
+const deleting = ref(false)
+const accountDeleted = ref(false)
+function cancelDeletion() {
+  showDeleteForm.value = false
+  deletePassword.value = ''
+  deleteConfirmed.value = false
+  deleteError.value = ''
+}
+async function removeAccount() {
+  if (deleting.value || busy.value || !deleteConfirmed.value) return
+  deleting.value = true; deleteError.value = ''
+  try {
+    await deleteAccount({ password: deletePassword.value, confirmation: deleteConfirmed.value })
+    user.value = null
+    accountDeleted.value = true
+    cancelDeletion()
+  } catch (cause) {
+    deleteError.value = cause.status === 429 ? 'Pārāk daudz mēģinājumu. Uzgaidi minūti un mēģini vēlreiz.' : cause.message
+  } finally { deleting.value = false; deletePassword.value = '' }
+}
 const initials = computed(() => user.value?.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toLocaleUpperCase('lv') || '♡')
 const changed = computed(() => name.value.trim() !== user.value?.name || email.value.trim().toLowerCase() !== user.value?.email)
 function reset() {
@@ -21,7 +45,7 @@ function reset() {
 watch(user, reset, { immediate: true, flush: 'sync' })
 watch([name, email], () => { success.value = ''; error.value = '' }, { flush: 'sync' })
 async function save() {
-  if (busy.value || !changed.value) return
+  if (busy.value || deleting.value || !changed.value) return
   busy.value = true
   error.value = ''; success.value = ''
   try {
@@ -52,7 +76,7 @@ async function save() {
           <h2 id="profile-details-title">Personīgā informācija</h2>
           <p>Šeit vari mainīt savu vārdu un e-pasta adresi.</p>
           <form @submit.prevent="save">
-            <fieldset :disabled="busy">
+            <fieldset :disabled="busy || deleting">
               <label for="profile-name">Tavs vārds</label>
               <input id="profile-name" v-model="name" autocomplete="name" required maxlength="100" pattern=".*\S.*" />
               <label for="profile-email">E-pasta adrese</label>
@@ -68,7 +92,32 @@ async function save() {
           </form>
         </section>
       </div>
+      <section class="profile-editor profile-danger" aria-labelledby="delete-account-title">
+        <h2 id="delete-account-title">Dzēst kontu</h2>
+        <p>Konts tiks neatgriezeniski dzēsts, un tu tiksi izrakstīts. Esošie pasūtījumu ieraksti tiks saglabāti bez tava vārda un saites uz kontu.</p>
+        <button v-if="!showDeleteForm" class="button delete-account-button" type="button" :disabled="busy" @click="showDeleteForm = true">Dzēst manu kontu</button>
+        <form v-else @submit.prevent="removeAccount">
+          <fieldset :disabled="deleting || busy">
+            <label for="delete-account-password">Pašreizējā parole</label>
+            <input id="delete-account-password" v-model="deletePassword" type="password" autocomplete="current-password" required />
+            <label class="delete-account-confirmation" for="delete-account-confirmation">
+              <input id="delete-account-confirmation" v-model="deleteConfirmed" type="checkbox" required />
+              <span>Es saprotu, ka konta dzēšanu nevar atsaukt.</span>
+            </label>
+            <div class="profile-form-actions">
+              <button class="button delete-account-button" type="submit" :disabled="deleting || busy || !deleteConfirmed">{{ deleting ? 'Dzēš kontu…' : 'Neatgriezeniski dzēst kontu' }}</button>
+              <button class="button outline-button" type="button" @click="cancelDeletion">Atcelt</button>
+            </div>
+          </fieldset>
+          <p v-if="deleteError" class="form-message" role="alert">{{ deleteError }}</p>
+        </form>
+      </section>
     </template>
+    <section v-else-if="accountDeleted" class="profile-editor profile-guest" role="status">
+      <h2>Tavs konts ir dzēsts</h2>
+      <p>Tu esi izrakstīts. Paldies, ka biji kopā ar ShocoStore.</p>
+      <a class="button pink-button" href="#/veikals">Uz veikalu ↗</a>
+    </section>
     <section v-else class="profile-editor profile-guest">
       <h2>Pieslēdzies savam kontam</h2>
       <p>Lai apskatītu un rediģētu savu informāciju, vispirms pieslēdzies.</p>

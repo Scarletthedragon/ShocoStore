@@ -332,3 +332,5 @@ body,#app{min-height:100vh;min-height:100dvh;background:var(--page-bg)}
 @media(max-width:650px){.profile-layout{grid-template-columns:1fr;gap:18px}.profile-summary,.profile-editor{padding:24px}.profile-page{padding-bottom:40px}.site-header .header-actions{flex-wrap:wrap}}
 
 .email-verification{margin-block:24px;padding:22px;border:1px solid var(--theme-border);border-left:4px solid var(--pink);border-radius:14px;background:var(--surface);overflow-wrap:anywhere}.email-verification h2{font-size:20px;margin-bottom:10px}.email-verification p{font-size:13px;line-height:1.7;color:var(--muted);margin-top:10px}.email-verification .profile-form-actions{margin-top:18px}.email-verification .button{font-size:12px}
+
+.profile-danger{margin-top:28px;border-color:#bb3548}.delete-account-button{background:#a92338;color:#fff}.delete-account-button:hover{background:#871b2d}.profile-danger .delete-account-confirmation{display:flex;align-items:flex-start;gap:12px;line-height:1.6;font-weight:400}.profile-danger .delete-account-confirmation input{width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#a92338}

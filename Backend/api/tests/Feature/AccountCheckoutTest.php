@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Pasutijums;
 use App\Models\Prece;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Notifications\Dispatcher;
@@ -177,6 +178,76 @@ class AccountCheckoutTest extends TestCase
     public function test_checkout_requires_authentication(): void
     {
         $this->postJson('/api/checkout', ['items' => []])->assertUnauthorized();
+    }
+
+    public function test_every_order_endpoint_blocks_guests_and_unverified_accounts_without_changing_stock(): void
+    {
+        $this->seed();
+        $product = Prece::query()->firstOrFail();
+        $stock = $product->Atlikums;
+        $payloads = [
+            '/api/orders' => ['productId' => $product->getKey(), 'quantity' => 1, 'emailVerified' => true],
+            '/api/checkout' => ['items' => [['productId' => $product->getKey(), 'quantity' => 1]], 'emailVerified' => true],
+        ];
+        foreach ($payloads as $url => $payload) {
+            $this->postJson($url, $payload)->assertUnauthorized();
+        }
+        $this->actingAs(Customer::factory()->create(['email_verified_at' => null]));
+        foreach ($payloads as $url => $payload) {
+            $this->postJson($url, $payload)->assertForbidden();
+        }
+        $this->assertDatabaseCount('Pasutijums', 0);
+        $this->assertSame($stock, $product->fresh()->Atlikums);
+    }
+
+    public function test_account_deletion_requires_authentication_correct_password_and_confirmation(): void
+    {
+        $this->deleteJson('/api/auth/account', ['password' => 'password123', 'confirmation' => true])->assertUnauthorized();
+        $customer = Customer::factory()->create();
+        $this->actingAs($customer)->deleteJson('/api/auth/account', ['password' => 'incorrect', 'confirmation' => true])
+            ->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->deleteJson('/api/auth/account', ['password' => 'password123', 'confirmation' => false])
+            ->assertUnprocessable()->assertJsonValidationErrors('confirmation');
+        $this->deleteJson('/api/auth/account', ['confirmation' => true])
+            ->assertUnprocessable()->assertJsonValidationErrors('password');
+        $this->assertDatabaseHas('Lietotajs', ['Lietotajs_ID' => $customer->getKey()]);
+        $this->assertAuthenticatedAs($customer);
+    }
+
+    public function test_unverified_customer_can_delete_account_and_cannot_log_back_in_or_use_old_verification_link(): void
+    {
+        $customer = Customer::factory()->create(['email_verified_at' => null]);
+        $url = URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id' => $customer->getKey(), 'hash' => sha1($customer->Epasts)]);
+        $this->actingAs($customer)->deleteJson('/api/auth/account', ['password' => 'password123', 'confirmation' => true])
+            ->assertOk()->assertJsonPath('user', null);
+        $this->assertDatabaseMissing('Lietotajs', ['Lietotajs_ID' => $customer->getKey()]);
+        $this->assertGuest();
+        $this->getJson('/api/auth/user')->assertUnauthorized();
+        $this->postJson('/api/auth/login', ['email' => $customer->Epasts, 'password' => 'password123'])->assertUnprocessable();
+        $this->getJson($url)->assertNotFound();
+    }
+
+    public function test_account_deletion_anonymizes_only_own_orders_and_preserves_stock(): void
+    {
+        $this->seed();
+        $customer = Customer::factory()->create();
+        $other = Customer::factory()->create();
+        $product = Prece::query()->firstOrFail();
+        $payload = ['items' => [['productId' => $product->getKey(), 'quantity' => 1]]];
+        $this->actingAs($customer)->postJson('/api/checkout', $payload)->assertCreated();
+        $this->actingAs($other)->postJson('/api/checkout', $payload)->assertCreated();
+        $stock = $product->fresh()->Atlikums;
+        $this->actingAs($customer)->deleteJson('/api/auth/account', [
+            'password' => 'password123', 'confirmation' => true, 'id' => $other->getKey(),
+        ])->assertOk();
+        $this->assertGuest();
+        $this->assertDatabaseMissing('Lietotajs', ['Lietotajs_ID' => $customer->getKey()]);
+        $this->assertDatabaseHas('Lietotajs', ['Lietotajs_ID' => $other->getKey()]);
+        $this->assertDatabaseCount('Pasutijums', 2);
+        $this->assertDatabaseHas('Pasutijums', ['Lietotajs_ID' => null, 'Klienta_vards' => 'Dzēsts konts']);
+        $this->assertDatabaseHas('Pasutijums', ['Lietotajs_ID' => $other->getKey(), 'Klienta_vards' => $other->Vards]);
+        $this->assertSame($stock, $product->fresh()->Atlikums);
+        $this->assertSame(0, Pasutijums::query()->where('Lietotajs_ID', $customer->getKey())->count());
     }
 
     public function test_checkout_uses_database_prices_and_applies_discount(): void

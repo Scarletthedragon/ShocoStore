@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
 Route::get('/products', [StoreController::class, 'products']);
 
-Route::post('/orders', [StoreController::class, 'storeOrder']);
 Route::get('/coupons/validate', [AdminCouponController::class, 'validateCoupon']);
 Route::middleware('web')->group(function (): void {
     Route::get('/auth/csrf', [AuthController::class, 'csrf']);
@@ -20,10 +19,12 @@ Route::middleware('web')->group(function (): void {
     Route::middleware('auth')->group(function (): void {
         Route::get('/auth/user', [AuthController::class, 'user']);
         Route::post('/auth/profile', [AuthController::class, 'updateProfile']);
+        Route::delete('/auth/account', [AuthController::class, 'deleteAccount'])->middleware('throttle:5,1');
         Route::post('/auth/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:1,1');
         Route::get('/orders', [StoreController::class, 'orders']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/checkout', [CouponController::class, 'checkout'])->middleware(['verified', 'throttle:10,1']);
+        Route::post('/orders', [StoreController::class, 'storeOrder'])->middleware(['verified', 'throttle:10,1']);
         Route::middleware('admin')->group(function (): void {
             Route::post('/products', [StoreController::class, 'storeProduct']);
             Route::put('/products/{product}', [StoreController::class, 'updateProduct']);

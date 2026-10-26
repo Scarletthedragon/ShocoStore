@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Pasutijums;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -80,6 +82,30 @@ class AuthController extends Controller
             'user' => $this->payload($customer),
             'verificationSent' => $emailChanged ? $this->sendVerification($customer) : null,
         ]);
+    }
+
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string', 'current_password:web'],
+            'confirmation' => ['required', 'accepted'],
+        ], [
+            'password.current_password' => 'Nepareiza parole.',
+            'confirmation.accepted' => 'Apstiprini, ka vēlies neatgriezeniski dzēst kontu.',
+        ]);
+        $customer = $request->user();
+        DB::transaction(function () use ($customer): void {
+            Pasutijums::query()->where('Lietotajs_ID', $customer->getKey())->update([
+                'Lietotajs_ID' => null,
+                'Klienta_vards' => 'Dzēsts konts',
+            ]);
+            $customer->delete();
+        });
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json(['user' => null]);
     }
 
     public function verifyEmail(Request $request, string $id, string $hash): RedirectResponse

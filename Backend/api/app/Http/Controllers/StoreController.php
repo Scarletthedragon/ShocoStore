@@ -116,10 +116,10 @@ class StoreController extends Controller
         $data = $request->validate([
             'productId' => ['required', 'integer', 'exists:Prece,Prece_ID'],
             'quantity' => ['required', 'integer', 'min:1', 'max:10000'],
-            'customerName' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $order = DB::transaction(function () use ($data): ?Pasutijums {
+        $customer = $request->user();
+        $order = DB::transaction(function () use ($data, $customer): ?Pasutijums {
             $product = Prece::query()
                 ->whereKey($data['productId'])
                 ->lockForUpdate()
@@ -132,12 +132,12 @@ class StoreController extends Controller
             $product->decrement('Atlikums', $data['quantity']);
 
             return Pasutijums::query()->create([
-                'Lietotajs_ID' => null,
+                'Lietotajs_ID' => $customer->getKey(),
                 'Prece_ID' => $product->Prece_ID,
                 'Daudzums' => $data['quantity'],
                 'Kopeja_cena' => round((float) $product->Cena * $data['quantity'], 2),
                 'Statuss' => 'gaida',
-                'Klienta_vards' => trim($data['customerName'] ?? '') ?: 'Guest',
+                'Klienta_vards' => $customer->Vards,
             ]);
         });
 
