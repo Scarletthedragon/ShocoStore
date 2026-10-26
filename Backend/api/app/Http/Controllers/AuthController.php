@@ -6,6 +6,7 @@ use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -50,6 +51,22 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return response()->json(['user' => null]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $customer = $request->user();
+        $request->merge([
+            'name' => trim((string) $request->input('name')),
+            'email' => mb_strtolower(trim((string) $request->input('email'))),
+        ]);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('Lietotajs', 'Epasts')->ignore($customer->getKey(), $customer->getKeyName())],
+        ]);
+        $customer->update(['Vards' => $data['name'], 'Epasts' => $data['email']]);
+
+        return response()->json(['user' => $this->payload($customer)]);
     }
 
     private function payload(Customer $customer): array

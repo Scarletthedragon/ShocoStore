@@ -40,6 +40,36 @@ class AccountCheckoutTest extends TestCase
         $this->assertAuthenticatedAs($customer);
     }
 
+    public function test_profile_updates_persist_and_only_change_the_authenticated_customer(): void
+    {
+        $customer = Customer::factory()->create();
+        $other = Customer::factory()->create();
+        $this->actingAs($customer)->postJson('/api/auth/profile', [
+            'name' => ' Updated Buyer ', 'email' => ' NEW@example.com ', 'id' => $other->getKey(), 'isAdmin' => true,
+        ])->assertOk()->assertJsonPath('user.name', 'Updated Buyer')->assertJsonPath('user.email', 'new@example.com')->assertJsonMissingPath('user.Parole');
+        $this->assertSame('new@example.com', $customer->fresh()->Epasts);
+        $this->assertSame($other->Epasts, $other->fresh()->Epasts);
+        $this->getJson('/api/auth/user')->assertOk()->assertJsonPath('user.name', 'Updated Buyer');
+        $this->postJson('/api/auth/logout')->assertOk();
+        $this->postJson('/api/auth/login', ['email' => 'new@example.com', 'password' => 'password123'])->assertOk();
+    }
+
+    public function test_profile_validates_details_and_allows_keeping_own_email(): void
+    {
+        $customer = Customer::factory()->create();
+        $other = Customer::factory()->create();
+        $this->actingAs($customer)->postJson('/api/auth/profile', ['name' => 'Buyer', 'email' => $customer->Epasts])->assertOk();
+        $this->postJson('/api/auth/profile', ['name' => '   ', 'email' => $other->Epasts])->assertUnprocessable()->assertJsonValidationErrors(['name', 'email']);
+        $this->postJson('/api/auth/profile', ['name' => str_repeat('a', 101), 'email' => 'invalid'])->assertUnprocessable()->assertJsonValidationErrors(['name', 'email']);
+        $this->assertSame('Buyer', $customer->fresh()->Vards);
+        $this->assertSame($customer->Epasts, $customer->fresh()->Epasts);
+    }
+
+    public function test_profile_requires_authentication(): void
+    {
+        $this->postJson('/api/auth/profile', ['name' => 'Buyer', 'email' => 'buyer@example.com'])->assertUnauthorized();
+    }
+
     public function test_checkout_requires_authentication(): void
     {
         $this->postJson('/api/checkout', ['items' => []])->assertUnauthorized();
