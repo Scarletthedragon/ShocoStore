@@ -83,6 +83,16 @@ class StoreController extends Controller
             'tone' => [$required, 'nullable', 'string', 'max:25'],
             'tag' => ['nullable', 'string', 'max:50'],
             'imageSelected' => ['sometimes', 'boolean'],
+            'details' => ['sometimes', 'nullable', 'array:cocoaLabel,cocoaPercentage,ingredients,allergens,tastingNotes,texture,pairing'],
+            'details.cocoaLabel' => ['nullable', 'string', 'max:100'],
+            'details.cocoaPercentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'details.ingredients' => ['sometimes', 'array', 'max:100'],
+            'details.ingredients.*' => ['required', 'string', 'max:255'],
+            'details.allergens' => ['sometimes', 'array', 'max:50'],
+            'details.allergens.*' => ['required', 'string', 'max:255'],
+            'details.tastingNotes' => ['nullable', 'string', 'max:1000'],
+            'details.texture' => ['nullable', 'string', 'max:1000'],
+            'details.pairing' => ['nullable', 'string', 'max:1000'],
             'nutrition' => ['sometimes', 'nullable', 'array:energyKcal,fat,saturates,carbohydrate,sugars,protein,salt'],
             'nutrition.energyKcal' => ['required_with:nutrition', 'numeric', 'min:0', 'max:1000'],
             'nutrition.fat' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100'],
@@ -113,6 +123,10 @@ class StoreController extends Controller
                 static fn (mixed $value): float => (float) $value,
                 $data['nutrition'],
             );
+        }
+
+        if (array_key_exists('details', $data)) {
+            $attributes['details'] = $data['details'] ?? [];
         }
 
         return $attributes;
@@ -184,7 +198,7 @@ class StoreController extends Controller
             'tile' => $visual['tile'] ?? 8,
             'category' => $visual['category'] ?? 'Piena',
             'tag' => $product->Birka ?? '',
-            'details' => isset($visual['details']) ? array_replace($visual['details'], ['nutrition' => $nutrition ?: null]) : null,
+            'details' => $product->details ?? (isset($recipe['details']) ? array_replace($recipe['details'], ['nutrition' => $nutrition ?: null]) : null),
             'nutrition' => $nutrition ?: null,
             'visualId' => $product->Tonis,
             'imageUrl' => $product->image_path ? Storage::disk('public')->url($product->image_path) : null,

@@ -43,6 +43,32 @@ class StoreApiTest extends TestCase
             ->assertJsonPath('0.id', (string) $response->json('id'));
     }
 
+    public function test_admin_can_save_and_edit_recipe_content(): void
+    {
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));
+        $details = ['cocoaLabel' => 'Kakao saturs', 'cocoaPercentage' => 70, 'ingredients' => ['Cocoa', 'Sugar'], 'allergens' => ['Milk'], 'texture' => 'Crunchy', 'pairing' => 'Coffee'];
+        $data = ['name' => 'Custom recipe', 'price' => 5, 'stock' => 2, 'tone' => 'berry', 'details' => $details];
+        $created = $this->postJson('/api/products', $data)->assertCreated()->assertJsonPath('details.ingredients.0', 'Cocoa');
+        $id = $created->json('id');
+        $this->assertEquals($details, Prece::query()->findOrFail($id)->details);
+        $data['details']['allergens'] = [];
+        $data['details']['cocoaPercentage'] = 65;
+        $this->putJson("/api/products/{$id}", $data)->assertOk()->assertJsonPath('details.allergens', [])->assertJsonPath('details.cocoaPercentage', 65);
+        unset($data['details']);
+        $this->putJson("/api/products/{$id}", $data)->assertOk()->assertJsonPath('details.cocoaPercentage', 65);
+        $this->getJson('/api/products')->assertJsonPath('0.details.ingredients.1', 'Sugar');
+    }
+
+    public function test_recipe_content_rejects_invalid_percentages_and_lists(): void
+    {
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));
+        $this->postJson('/api/products', [
+            'name' => 'Invalid recipe', 'price' => 5,
+            'details' => ['cocoaPercentage' => 101, 'ingredients' => 'not a list', 'allergens' => [str_repeat('x', 256)]],
+        ])->assertUnprocessable()->assertJsonValidationErrors(['details.cocoaPercentage', 'details.ingredients', 'details.allergens.0']);
+        $this->assertDatabaseMissing('Prece', ['Nosaukums' => 'Invalid recipe']);
+    }
+
     public function test_admin_can_save_update_and_remove_nutrition(): void
     {
         $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));

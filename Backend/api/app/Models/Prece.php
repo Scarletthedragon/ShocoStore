@@ -22,6 +22,7 @@ class Prece extends Model
         'Birka',
         'image_path',
         'nutrition',
+        'details',
     ];
 
     protected function casts(): array
@@ -30,6 +31,7 @@ class Prece extends Model
             'Cena' => 'decimal:2',
             'Atlikums' => 'integer',
             'nutrition' => 'array',
+            'details' => 'array',
         ];
     }
 

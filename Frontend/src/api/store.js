@@ -36,7 +36,7 @@ export const revokeAdminCoupon = id => mutate(`/admin/coupons/${id}`, undefined,
 function productFormData(product) {
   const data = new FormData()
   for (const [key, value] of Object.entries(product)) {
-    if (key === 'nutrition') continue
+    if (key === 'nutrition' || key === 'details') continue
     if (value !== undefined && value !== null) data.append(key, value)
   }
   data.append('imageSelected', product.image ? '1' : '0')

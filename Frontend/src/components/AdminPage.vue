@@ -34,7 +34,15 @@ function minimumExpiration() {
 }
 
 function blankProduct() {
-  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tag: '', image: null, currentImageUrl: '', nutritionEnabled: false, nutrition: blankNutrition() }
+  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tag: '', image: null, currentImageUrl: '', nutritionEnabled: false, nutrition: blankNutrition(), details: blankDetails() }
+}
+
+function blankDetails() {
+  return { cocoaLabel: 'Kakao saturs', cocoaPercentage: '', ingredients: '', allergens: '', tastingNotes: '', texture: '', pairing: '' }
+}
+
+function contentList(value) {
+  return value.split(/\r?\n/).map(item => item.trim()).filter(Boolean)
 }
 
 const nutritionFields = [
@@ -151,6 +159,11 @@ function editProduct(product) {
     tile: product.tile,
     nutritionEnabled: Boolean(product.nutrition),
     nutrition: { ...blankNutrition(), ...product.nutrition },
+    details: {
+      ...blankDetails(), ...product.details,
+      ingredients: (product.details?.ingredients ?? []).join('\n'),
+      allergens: (product.details?.allergens ?? []).join('\n'),
+    },
   }
   clearImagePreview()
   message.value = ''
@@ -182,6 +195,16 @@ async function saveChocolate() {
     description: productForm.value.description,
     tone: productForm.value.tone,
     tag: productForm.value.tag,
+    details: {
+      cocoaLabel: productForm.value.details.cocoaLabel,
+      tastingNotes: productForm.value.details.tastingNotes,
+      texture: productForm.value.details.texture,
+      pairing: productForm.value.details.pairing,
+      cocoaPercentage: productForm.value.details.cocoaPercentage === '' || productForm.value.details.cocoaPercentage == null
+        ? null : Number(productForm.value.details.cocoaPercentage),
+      ingredients: contentList(productForm.value.details.ingredients),
+      allergens: contentList(productForm.value.details.allergens),
+    },
     nutrition: productForm.value.nutritionEnabled
       ? Object.fromEntries(nutritionFields.map(({ key }) => [key, Number(productForm.value.nutrition[key])]))
       : null,
@@ -291,6 +314,18 @@ onBeforeUnmount(clearImagePreview)
           </div>
           <div class="admin-product-description"><label for="product-description">Apraksts</label><textarea id="product-description" v-model="productForm.description" maxlength="1000" rows="3"></textarea></div>
         </div>
+        <fieldset class="admin-nutrition" :disabled="busy">
+          <legend>Produkta saturs</legend>
+          <div class="admin-form-grid">
+            <div><label for="cocoa-label">Satura nosaukums</label><input id="cocoa-label" v-model="productForm.details.cocoaLabel" maxlength="100" placeholder="Kakao saturs" /></div>
+            <div><label for="cocoa-percentage">Kakao saturs (%)</label><input id="cocoa-percentage" v-model.number="productForm.details.cocoaPercentage" type="number" min="0" max="100" step="0.01" /></div>
+            <div><label for="product-ingredients">Sastāvdaļas (katru jaunā rindā)</label><textarea id="product-ingredients" v-model="productForm.details.ingredients" rows="5"></textarea></div>
+            <div><label for="product-allergens">Alergēni (katru jaunā rindā)</label><textarea id="product-allergens" v-model="productForm.details.allergens" rows="5"></textarea></div>
+            <div><label for="product-taste">Garšas apraksts</label><textarea id="product-taste" v-model="productForm.details.tastingNotes" maxlength="1000" rows="3"></textarea></div>
+            <div><label for="product-texture">Tekstūra</label><textarea id="product-texture" v-model="productForm.details.texture" maxlength="1000" rows="3"></textarea></div>
+            <div><label for="product-pairing">Ar ko sader / pasniegšanas ieteikums</label><textarea id="product-pairing" v-model="productForm.details.pairing" maxlength="1000" rows="3"></textarea></div>
+          </div>
+        </fieldset>
         <fieldset class="admin-nutrition" :disabled="busy">
           <legend>Uzturvērtība uz 100 g</legend>
           <label class="admin-nutrition-toggle"><input v-model="productForm.nutritionEnabled" type="checkbox" /> Norādīt uzturvērtību</label>

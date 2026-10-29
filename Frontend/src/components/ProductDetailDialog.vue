@@ -52,31 +52,31 @@ defineExpose({ open, close })
           <strong class="product-details-price">{{ money(product.price) }} <span>/ 100 g</span></strong>
           <dl class="product-details-facts">
             <div><dt>Šokolādes veids</dt><dd>{{ product.category }}</dd></div>
-            <div v-if="product.details"><dt>{{ product.details.cocoaLabel }}</dt><dd>{{ product.details.cocoaPercentage }}%</dd></div>
+            <div v-if="product.details?.cocoaPercentage != null"><dt>{{ product.details.cocoaLabel || 'Kakao saturs' }}</dt><dd>{{ product.details.cocoaPercentage }}%</dd></div>
             <div><dt>Iepakojums</dt><dd>100 g</dd></div>
           </dl>
         </div>
       </div>
 
       <template v-if="product.details">
-        <section class="product-details-section">
+        <section v-if="product.details.tastingNotes || product.details.texture || product.details.pairing" class="product-details-section">
           <h3>Garša un tekstūra</h3>
           <p>{{ product.details.tastingNotes }}</p>
           <p>{{ product.details.texture }}</p>
-          <p><strong>Ieteikums:</strong> {{ product.details.pairing }}</p>
+          <p v-if="product.details.pairing"><strong>Ieteikums:</strong> {{ product.details.pairing }}</p>
         </section>
 
-        <section class="product-details-section">
+        <section v-if="product.details.ingredients?.length" class="product-details-section">
           <h3>Sastāvdaļas</h3>
           <p>{{ product.details.ingredients.join(', ') }}</p>
         </section>
 
         <section class="product-details-section">
           <h3>Alergēni</h3>
-          <p>{{ product.details.allergens.length ? product.details.allergens.join(', ') : 'Nav norādīti.' }}</p>
+          <p>{{ product.details.allergens?.length ? product.details.allergens.join(', ') : 'Nav norādīti.' }}</p>
         </section>
 
-        <p class="product-details-disclaimer">Uzturvērtības, sastāvdaļas un alergēni ir šīs receptūras koncepta aplēses, nevis pārbaudīts marķējums. Pirms lietošanas pārbaudi informāciju uz faktiskā iepakojuma.</p>
+        <p class="product-details-disclaimer">Pirms lietošanas pārbaudi informāciju uz faktiskā iepakojuma.</p>
       </template>
       <p v-else class="product-details-disclaimer">Šim produktam detalizēta receptūras informācija vēl nav pievienota.</p>
       <section v-if="nutritionRows.length" class="product-details-section nutrition-section">
