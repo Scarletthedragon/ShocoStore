@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { createAdminCoupon, deleteProduct, getAdminCoupons, getProducts, revokeAdminCoupon, saveProduct, updateProduct } from '../api/store.js'
+import { createAdminCoupon, deleteProduct, getAdminCoupons, getProducts, revokeAdminCoupon, saveProduct, updateProduct, uploadProductImage } from '../api/store.js'
 import ProductImage from './ProductImage.vue'
+import { prepareProductImage } from '../api/product-image.js'
 
 const coupons = ref([])
 const products = ref([])
@@ -10,10 +11,13 @@ const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
 const message = ref('')
+const productError = ref('')
 const couponForm = ref({ code: '', discountPercent: 15, usageLimit: 1, expiresAt: defaultExpiration(), productIds: [] })
 const productForm = ref(blankProduct())
 const editingProductId = ref(null)
 const selectedImagePreview = ref('')
+const imagePreparing = ref(false)
+let imageSelection = 0
 
 const sortedCoupons = computed(() => [...coupons.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
 
@@ -38,18 +42,25 @@ function clearImagePreview() {
   selectedImagePreview.value = ''
 }
 
-function selectProductImage(event) {
-  clearImagePreview()
+async function selectProductImage(event) {
+  const selection = ++imageSelection
   const image = event.target.files?.[0] ?? null
   event.target.value = ''
-  if (image && image.size > 5 * 1024 * 1024) {
-    productForm.value.image = null
-    error.value = 'Attēla izmērs nedrīkst pārsniegt 5 MB.'
-    return
+  clearImagePreview()
+  productForm.value.image = null
+  productError.value = ''
+  if (!image) return
+  imagePreparing.value = true
+  try {
+    const prepared = await prepareProductImage(image)
+    if (selection !== imageSelection) return
+    productForm.value.image = prepared
+    selectedImagePreview.value = URL.createObjectURL(prepared)
+  } catch (cause) {
+    if (selection === imageSelection) productError.value = cause.message
+  } finally {
+    if (selection === imageSelection) imagePreparing.value = false
   }
-  productForm.value.image = image
-  if (image) selectedImagePreview.value = URL.createObjectURL(image)
-  error.value = ''
 }
 
 function tileForTone(tone) {
@@ -112,6 +123,7 @@ async function createCoupon() {
 }
 
 function editProduct(product) {
+  imageSelection++; imagePreparing.value = false; productError.value = ''
   editingProductId.value = product.id
   productForm.value = {
     name: product.name,
@@ -129,32 +141,52 @@ function editProduct(product) {
 }
 
 function cancelProductEdit() {
+  imageSelection++; imagePreparing.value = false; productError.value = ''
   clearImagePreview()
   editingProductId.value = null
   productForm.value = blankProduct()
 }
 
+function showSavedProduct(saved) {
+  const index = products.value.findIndex(product => product.id === saved.id)
+  if (index === -1) products.value.push(saved)
+  else products.value[index] = saved
+  emit('products-updated')
+}
+
 async function saveChocolate() {
-  if (busy.value) return
+  if (busy.value || imagePreparing.value) return
   busy.value = true
-  error.value = ''
-  message.value = ''
+  error.value = ''; message.value = ''; productError.value = ''
+  const image = productForm.value.image
+  const payload = {
+    name: productForm.value.name.trim(),
+    price: Number(productForm.value.price),
+    stock: Number(productForm.value.stock),
+    description: productForm.value.description,
+    tone: productForm.value.tone,
+    tag: productForm.value.tag,
+  }
   try {
-    const payload = { ...productForm.value }
-    delete payload.currentImageUrl
-    payload.price = Number(payload.price)
-    payload.stock = Number(payload.stock)
     const saved = editingProductId.value
       ? await updateProduct(editingProductId.value, payload)
       : await saveProduct(payload)
-    const index = products.value.findIndex(product => product.id === saved.id)
-    if (index === -1) products.value.push(saved)
-    else products.value[index] = saved
-    message.value = editingProductId.value ? `Prece “${saved.name}” atjaunināta.` : `Prece “${saved.name}” pievienota.`
-    emit('products-updated')
+    editingProductId.value = saved.id
+    productForm.value.currentImageUrl = saved.imageUrl ?? ''
+    showSavedProduct(saved)
+    if (image) {
+      try {
+        const withImage = await uploadProductImage(saved.id, payload, image)
+        showSavedProduct(withImage)
+      } catch (cause) {
+        productError.value = 'Šokolāde ir saglabāta, bet attēlu neizdevās augšupielādēt. ' + cause.message + ' Mēģini saglabāt vēlreiz; jauns ieraksts netiks izveidots.'
+        return
+      }
+    }
+    message.value = 'Šokolāde ir saglabāta.'
     cancelProductEdit()
   } catch (cause) {
-    error.value = cause.message
+    productError.value = cause.message
   } finally {
     busy.value = false
   }
@@ -236,15 +268,16 @@ onBeforeUnmount(clearImagePreview)
               <ProductImage class="admin-product-preview-image" :tile="tileForTone(productForm.tone)" :label="`Attēla priekšskatījums: ${productForm.name || 'šokolāde'}`" :image-url="selectedImagePreview || productForm.currentImageUrl" />
               <span>{{ selectedImagePreview ? 'Mainīt attēlu' : productForm.currentImageUrl ? 'Nomainīt attēlu' : 'Pievienot attēlu' }}</span>
             </label>
-            <input id="product-image" class="admin-image-input" type="file" accept="image/jpeg,image/png,image/webp" @change="selectProductImage" />
-            <small>Uzklikšķini uz attēla, lai pievienotu vai nomainītu (JPG, PNG vai WebP; līdz 5 MB).</small>
+            <input id="product-image" class="admin-image-input" type="file" :disabled="busy || imagePreparing" accept="image/jpeg,image/png,image/webp" @change="selectProductImage" />
+            <small>JPG, PNG vai WebP līdz 20 MB. Attēls tiks samazināts pirms augšupielādes.</small>
           </div>
           <div class="admin-product-description"><label for="product-description">Apraksts</label><textarea id="product-description" v-model="productForm.description" maxlength="1000" rows="3"></textarea></div>
         </div>
         <div class="admin-form-actions">
-          <button class="button pink-button" type="submit" :disabled="busy">{{ busy ? 'Saglabā…' : editingProductId ? 'Atjaunināt šokolādi' : 'Pievienot šokolādi' }}</button>
+          <button class="button pink-button" type="submit" :disabled="busy || imagePreparing">{{ imagePreparing ? 'Sagatavo attēlu…' : busy ? 'Saglabā…' : editingProductId ? 'Atjaunināt šokolādi' : 'Pievienot šokolādi' }}</button>
           <button v-if="editingProductId" class="button outline-button" type="button" :disabled="busy" @click="cancelProductEdit">Atcelt</button>
         </div>
+        <p v-if="productError" class="form-message" role="alert">{{ productError }}</p>
       </form>
 
       <p v-if="loading" role="status">Ielādē šokolādes…</p>
