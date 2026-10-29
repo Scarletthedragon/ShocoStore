@@ -34,7 +34,21 @@ function minimumExpiration() {
 }
 
 function blankProduct() {
-  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tag: '', image: null, currentImageUrl: '' }
+  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tag: '', image: null, currentImageUrl: '', nutritionEnabled: false, nutrition: blankNutrition() }
+}
+
+const nutritionFields = [
+  { key: 'energyKcal', label: 'Enerģētiskā vērtība (kcal)', max: 1000 },
+  { key: 'fat', label: 'Tauki (g)', max: 100 },
+  { key: 'saturates', label: 'Tostarp piesātinātās taukskābes (g)', max: 100 },
+  { key: 'carbohydrate', label: 'Ogļhidrāti (g)', max: 100 },
+  { key: 'sugars', label: 'Tostarp cukuri (g)', max: 100 },
+  { key: 'protein', label: 'Olbaltumvielas (g)', max: 100 },
+  { key: 'salt', label: 'Sāls (g)', max: 100 },
+]
+
+function blankNutrition() {
+  return { energyKcal: '', fat: '', saturates: '', carbohydrate: '', sugars: '', protein: '', salt: '' }
 }
 
 function clearImagePreview() {
@@ -135,6 +149,8 @@ function editProduct(product) {
     image: null,
     currentImageUrl: product.imageUrl ?? '',
     tile: product.tile,
+    nutritionEnabled: Boolean(product.nutrition),
+    nutrition: { ...blankNutrition(), ...product.nutrition },
   }
   clearImagePreview()
   message.value = ''
@@ -166,6 +182,9 @@ async function saveChocolate() {
     description: productForm.value.description,
     tone: productForm.value.tone,
     tag: productForm.value.tag,
+    nutrition: productForm.value.nutritionEnabled
+      ? Object.fromEntries(nutritionFields.map(({ key }) => [key, Number(productForm.value.nutrition[key])]))
+      : null,
   }
   try {
     const saved = editingProductId.value
@@ -260,7 +279,6 @@ onBeforeUnmount(clearImagePreview)
           <div><label for="product-name">Nosaukums</label><input id="product-name" v-model="productForm.name" required maxlength="100" /></div>
           <div><label for="product-price">Cena (€)</label><input id="product-price" v-model.number="productForm.price" type="number" min="0" max="99999999.99" step="0.01" required /></div>
           <div><label for="product-stock">Atlikums</label><input id="product-stock" v-model.number="productForm.stock" type="number" min="0" step="1" required /></div>
-          <div><label for="product-visual">Iepakojuma stils</label><select id="product-visual" v-model="productForm.tone"><option v-for="[id, label] in visualOptions" :key="id" :value="id">{{ label }}</option></select></div>
           <div><label for="product-tag">Birka (neobligāti)</label><input id="product-tag" v-model="productForm.tag" maxlength="50" /></div>
           <div class="admin-image-field">
             <span class="admin-image-label">Šokolādes attēls</span>
@@ -273,6 +291,17 @@ onBeforeUnmount(clearImagePreview)
           </div>
           <div class="admin-product-description"><label for="product-description">Apraksts</label><textarea id="product-description" v-model="productForm.description" maxlength="1000" rows="3"></textarea></div>
         </div>
+        <fieldset class="admin-nutrition" :disabled="busy">
+          <legend>Uzturvērtība uz 100 g</legend>
+          <label class="admin-nutrition-toggle"><input v-model="productForm.nutritionEnabled" type="checkbox" /> Norādīt uzturvērtību</label>
+          <div v-if="productForm.nutritionEnabled" class="admin-form-grid">
+            <div v-for="field in nutritionFields" :key="field.key">
+              <label :for="`nutrition-${field.key}`">{{ field.label }}</label>
+              <input :id="`nutrition-${field.key}`" v-model.number="productForm.nutrition[field.key]" type="number" min="0" :max="field.max" step="0.01" required />
+            </div>
+          </div>
+          <p v-if="productForm.nutritionEnabled">Enerģija: {{ Math.round(Number(productForm.nutrition.energyKcal || 0) * 4.184) }} kJ. Izmanto datus no produkta iepakojuma.</p>
+        </fieldset>
         <div class="admin-form-actions">
           <button class="button pink-button" type="submit" :disabled="busy || imagePreparing">{{ imagePreparing ? 'Sagatavo attēlu…' : busy ? 'Saglabā…' : editingProductId ? 'Atjaunināt šokolādi' : 'Pievienot šokolādi' }}</button>
           <button v-if="editingProductId" class="button outline-button" type="button" :disabled="busy" @click="cancelProductEdit">Atcelt</button>
@@ -352,3 +381,11 @@ onBeforeUnmount(clearImagePreview)
     </section>
   </main>
 </template>
+
+<style scoped>
+.admin-nutrition{margin:18px 0;padding:18px;border:1px solid var(--theme-border);border-radius:14px;min-width:0}
+.admin-nutrition legend{font-weight:700;padding-inline:8px}
+.admin-nutrition .admin-nutrition-toggle{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.admin-nutrition .admin-nutrition-toggle input{width:auto;min-height:0}
+.admin-nutrition p{font-size:12px;color:var(--muted);margin-top:12px}
+</style>

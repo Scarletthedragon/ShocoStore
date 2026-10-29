@@ -21,6 +21,7 @@ class Prece extends Model
         'Tonis',
         'Birka',
         'image_path',
+        'nutrition',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Prece extends Model
         return [
             'Cena' => 'decimal:2',
             'Atlikums' => 'integer',
+            'nutrition' => 'array',
         ];
     }
 

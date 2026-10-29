@@ -43,6 +43,43 @@ class StoreApiTest extends TestCase
             ->assertJsonPath('0.id', (string) $response->json('id'));
     }
 
+    public function test_admin_can_save_update_and_remove_nutrition(): void
+    {
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));
+        $nutrition = ['energyKcal' => 540, 'fat' => 32, 'saturates' => 18, 'carbohydrate' => 55, 'sugars' => 45, 'protein' => 6, 'salt' => 0.12];
+        $data = ['name' => 'Custom chocolate', 'price' => 5, 'stock' => 3, 'tone' => 'berry', 'nutrition' => $nutrition];
+        $created = $this->postJson('/api/products', $data)->assertCreated();
+        $id = $created->json('id');
+        $this->assertEquals($nutrition, Prece::query()->findOrFail($id)->nutrition);
+        $this->getJson('/api/products')->assertJsonPath('0.nutrition.energyKcal', 540);
+        $data['nutrition']['energyKcal'] = 560;
+        $this->putJson("/api/products/{$id}", $data)->assertOk()->assertJsonPath('nutrition.energyKcal', 560);
+        unset($data['nutrition']);
+        $this->putJson("/api/products/{$id}", $data)->assertOk()->assertJsonPath('nutrition.energyKcal', 560);
+        $data['nutrition'] = null;
+        $this->putJson("/api/products/{$id}", $data)->assertOk()->assertJsonPath('nutrition', null);
+    }
+
+    public function test_nutrition_rejects_incomplete_values_and_invalid_subtotals(): void
+    {
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));
+        $this->postJson('/api/products', [
+            'name' => 'Invalid nutrition', 'price' => 5,
+            'nutrition' => ['energyKcal' => -1, 'fat' => 10, 'saturates' => 20, 'carbohydrate' => 30, 'sugars' => 40],
+        ])->assertUnprocessable()->assertJsonValidationErrors([
+            'nutrition.energyKcal', 'nutrition.saturates', 'nutrition.sugars', 'nutrition.protein', 'nutrition.salt',
+        ]);
+        $this->assertDatabaseMissing('Prece', ['Nosaukums' => 'Invalid nutrition']);
+    }
+
+    public function test_packaging_style_does_not_supply_nutrition_to_a_new_recipe(): void
+    {
+        $this->actingAs(Customer::factory()->create(['Epasts' => 'admin@example.com']));
+        $this->postJson('/api/products', [
+            'name' => 'New berry recipe', 'price' => 5, 'tone' => 'berry',
+        ])->assertCreated()->assertJsonPath('nutrition', null);
+    }
+
     public function test_only_admin_can_create_or_update_chocolates(): void
     {
         $this->postJson('/api/products', [

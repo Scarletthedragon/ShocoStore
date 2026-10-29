@@ -83,6 +83,14 @@ class StoreController extends Controller
             'tone' => [$required, 'nullable', 'string', 'max:25'],
             'tag' => ['nullable', 'string', 'max:50'],
             'imageSelected' => ['sometimes', 'boolean'],
+            'nutrition' => ['sometimes', 'nullable', 'array:energyKcal,fat,saturates,carbohydrate,sugars,protein,salt'],
+            'nutrition.energyKcal' => ['required_with:nutrition', 'numeric', 'min:0', 'max:1000'],
+            'nutrition.fat' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100'],
+            'nutrition.saturates' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100', 'lte:nutrition.fat'],
+            'nutrition.carbohydrate' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100'],
+            'nutrition.sugars' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100', 'lte:nutrition.carbohydrate'],
+            'nutrition.protein' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100'],
+            'nutrition.salt' => ['required_with:nutrition', 'numeric', 'min:0', 'max:100'],
             'image' => ['required_if:imageSelected,1', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ], [
             'image.required_if' => 'Neizdevās saņemt izvēlēto attēlu. Pārbaudi servera augšupielādes limitu un mēģini vēlreiz.',
@@ -91,7 +99,7 @@ class StoreController extends Controller
 
     private function productAttributes(array $data): array
     {
-        return [
+        $attributes = [
             'Nosaukums' => trim($data['name']),
             'Cena' => $data['price'],
             'Atlikums' => $data['stock'] ?? 0,
@@ -99,6 +107,15 @@ class StoreController extends Controller
             'Tonis' => $data['tone'] ?? 'mango',
             'Birka' => $data['tag'] ?? '',
         ];
+
+        if (array_key_exists('nutrition', $data)) {
+            $attributes['nutrition'] = $data['nutrition'] === null ? [] : array_map(
+                static fn (mixed $value): float => (float) $value,
+                $data['nutrition'],
+            );
+        }
+
+        return $attributes;
     }
 
     public function orders(Request $request): JsonResponse
@@ -154,6 +171,8 @@ class StoreController extends Controller
     {
         $this->catalog ??= json_decode(file_get_contents(database_path('seeders/catalog.json')), true, flags: JSON_THROW_ON_ERROR);
         $visual = collect($this->catalog)->first(fn (array $item) => $item['name'] === $product->Nosaukums || $item['id'] === $product->Tonis) ?? [];
+        $recipe = collect($this->catalog)->firstWhere('name', $product->Nosaukums);
+        $nutrition = $product->nutrition ?? ($recipe['details']['nutrition'] ?? null);
 
         return [
             'id' => (string) $product->Prece_ID,
@@ -165,7 +184,8 @@ class StoreController extends Controller
             'tile' => $visual['tile'] ?? 8,
             'category' => $visual['category'] ?? 'Piena',
             'tag' => $product->Birka ?? '',
-            'details' => $visual['details'] ?? null,
+            'details' => isset($visual['details']) ? array_replace($visual['details'], ['nutrition' => $nutrition ?: null]) : null,
+            'nutrition' => $nutrition ?: null,
             'visualId' => $product->Tonis,
             'imageUrl' => $product->image_path ? Storage::disk('public')->url($product->image_path) : null,
         ];

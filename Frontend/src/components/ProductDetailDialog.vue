@@ -6,7 +6,7 @@ import { money } from '../data/products.js'
 const dialog = ref(null)
 const product = ref(null)
 const nutritionRows = computed(() => {
-  const nutrition = product.value?.details?.nutrition
+  const nutrition = product.value?.nutrition
   if (!nutrition) return []
 
   return [
@@ -76,16 +76,15 @@ defineExpose({ open, close })
           <p>{{ product.details.allergens.length ? product.details.allergens.join(', ') : 'Nav norādīti.' }}</p>
         </section>
 
-        <section class="product-details-section nutrition-section">
-          <div class="nutrition-heading"><h3>Uzturvērtība</h3><span>uz 100 g</span></div>
-          <dl class="product-nutrition">
-            <div v-for="row in nutritionRows" :key="row.label"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div>
-          </dl>
-        </section>
-
         <p class="product-details-disclaimer">Uzturvērtības, sastāvdaļas un alergēni ir šīs receptūras koncepta aplēses, nevis pārbaudīts marķējums. Pirms lietošanas pārbaudi informāciju uz faktiskā iepakojuma.</p>
       </template>
       <p v-else class="product-details-disclaimer">Šim produktam detalizēta receptūras informācija vēl nav pievienota.</p>
+      <section v-if="nutritionRows.length" class="product-details-section nutrition-section">
+        <div class="nutrition-heading"><h3>Uzturvērtība</h3><span>uz 100 g</span></div>
+        <dl class="product-nutrition">
+          <div v-for="row in nutritionRows" :key="row.label"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></div>
+        </dl>
+      </section>
     </article>
   </dialog>
 </template>
