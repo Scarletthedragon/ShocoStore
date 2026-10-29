@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { createAdminCoupon, deleteProduct, getAdminCoupons, getProducts, revokeAdminCoupon, saveProduct, updateProduct, uploadProductImage } from '../api/store.js'
 import ProductImage from './ProductImage.vue'
+import OrdersPanel from './OrdersPanel.vue'
 import { prepareProductImage } from '../api/product-image.js'
 
 const coupons = ref([])
@@ -316,6 +317,7 @@ onBeforeUnmount(clearImagePreview)
       <div><span>Aktīvie atlaižu kodi</span><strong>{{ activeCouponCount }}</strong></div>
     </div>
     <nav class="admin-sections" aria-label="Pārvaldības sadaļas">
+      <button type="button" :aria-pressed="activeSection === 'orders'" @click="activeSection = 'orders'">Pasūtījumi</button>
       <button type="button" :aria-pressed="activeSection === 'products'" @click="activeSection = 'products'">Šokolādes <span>{{ products.length }}</span></button>
       <button type="button" :aria-pressed="activeSection === 'coupons'" @click="activeSection = 'coupons'">Atlaižu kodi <span>{{ coupons.length }}</span></button>
     </nav>
@@ -389,6 +391,7 @@ onBeforeUnmount(clearImagePreview)
       </ul>
     </section>
 
+    <OrdersPanel v-if="activeSection === 'orders'" admin />
     <div v-show="activeSection === 'coupons'" class="admin-coupons-layout">
     <form class="admin-coupon-form" @submit.prevent="createCoupon">
       <h2>Jauns atlaižu kods</h2>

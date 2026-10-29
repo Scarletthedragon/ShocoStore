@@ -20,6 +20,11 @@ class Pasutijums extends Model
         'Kopeja_cena',
         'Statuss',
         'Klienta_vards',
+        'shipment_id',
+        'delivery_address',
+        'status_history',
+        'unit_price',
+        'tracking_number',
     ];
 
     protected function casts(): array
@@ -28,6 +33,9 @@ class Pasutijums extends Model
             'Daudzums' => 'integer',
             'Kopeja_cena' => 'decimal:2',
             'Izveidots' => 'datetime',
+            'delivery_address' => 'array',
+            'status_history' => 'array',
+            'unit_price' => 'decimal:4',
         ];
     }
 

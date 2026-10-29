@@ -120,7 +120,7 @@ class AccountCheckoutTest extends TestCase
     {
         config(['app.admin_email' => 'admin@example.com']);
         $customer = Customer::factory()->create(['Epasts' => 'admin@example.com', 'email_verified_at' => null]);
-        $this->actingAs($customer)->postJson('/api/checkout', ['items' => []])->assertForbidden();
+        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => []])->assertForbidden();
         $this->getJson('/api/admin/coupons')->assertForbidden();
         $this->getJson('/api/auth/user')->assertOk()->assertJsonPath('user.isAdmin', false);
     }
@@ -177,7 +177,7 @@ class AccountCheckoutTest extends TestCase
 
     public function test_checkout_requires_authentication(): void
     {
-        $this->postJson('/api/checkout', ['items' => []])->assertUnauthorized();
+        $this->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => []])->assertUnauthorized();
     }
 
     public function test_every_order_endpoint_blocks_guests_and_unverified_accounts_without_changing_stock(): void
@@ -255,7 +255,7 @@ class AccountCheckoutTest extends TestCase
         $this->seed();
         $customer = Customer::factory()->create();
         $products = Prece::query()->orderBy('Prece_ID')->take(2)->get();
-        $this->actingAs($customer)->postJson('/api/checkout', ['items' => [['productId' => $products[0]->getKey(), 'quantity' => 2], ['productId' => $products[1]->getKey(), 'quantity' => 1]], 'total' => 0.01])->assertCreated()->assertJsonPath('subtotal', 25)->assertJsonPath('total', 25)->assertJsonPath('discount', 0);
+        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => [['productId' => $products[0]->getKey(), 'quantity' => 2], ['productId' => $products[1]->getKey(), 'quantity' => 1]], 'total' => 0.01])->assertCreated()->assertJsonPath('subtotal', 25)->assertJsonPath('total', 25)->assertJsonPath('discount', 0);
         $this->assertSame(23, $products[0]->fresh()->Atlikums);
         $this->assertSame(24, $products[1]->fresh()->Atlikums);
         $this->assertDatabaseCount('Pasutijums', 2);
@@ -269,7 +269,7 @@ class AccountCheckoutTest extends TestCase
         $this->seed();
         $products = Prece::query()->orderBy('Prece_ID')->take(2)->get();
         $products[1]->update(['Atlikums' => 0]);
-        $this->actingAs(Customer::factory()->create())->postJson('/api/checkout', ['items' => [['productId' => $products[0]->getKey(), 'quantity' => 1], ['productId' => $products[1]->getKey(), 'quantity' => 1]]])->assertUnprocessable();
+        $this->actingAs(Customer::factory()->create())->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => [['productId' => $products[0]->getKey(), 'quantity' => 1], ['productId' => $products[1]->getKey(), 'quantity' => 1]]])->assertUnprocessable();
         $this->assertSame(25, $products[0]->fresh()->Atlikums);
         $this->assertDatabaseCount('Pasutijums', 0);
     }
@@ -278,7 +278,7 @@ class AccountCheckoutTest extends TestCase
     {
         $this->seed();
         $id = Prece::query()->firstOrFail()->getKey();
-        $this->actingAs(Customer::factory()->create())->postJson('/api/checkout', ['items' => [['productId' => $id, 'quantity' => 1], ['productId' => $id, 'quantity' => 1]], 'coupon' => 'INVALID'])->assertUnprocessable()->assertJsonValidationErrors(['coupon', 'items.0.productId']);
+        $this->actingAs(Customer::factory()->create())->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => [['productId' => $id, 'quantity' => 1], ['productId' => $id, 'quantity' => 1]], 'coupon' => 'INVALID'])->assertUnprocessable()->assertJsonValidationErrors(['coupon', 'items.0.productId']);
         $this->assertDatabaseCount('Pasutijums', 0);
     }
 

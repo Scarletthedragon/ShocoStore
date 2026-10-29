@@ -98,6 +98,7 @@ class AuthController extends Controller
             Pasutijums::query()->where('Lietotajs_ID', $customer->getKey())->update([
                 'Lietotajs_ID' => null,
                 'Klienta_vards' => 'Dzēsts konts',
+                'delivery_address' => null,
             ]);
             $customer->delete();
         });
@@ -153,6 +154,7 @@ class AuthController extends Controller
             'name' => $customer->Vards,
             'email' => $customer->Epasts,
             'emailVerified' => $customer->hasVerifiedEmail(),
+            'address' => $customer->delivery_address,
             'isAdmin' => $customer->hasVerifiedEmail() && config('app.admin_email') !== ''
                 && hash_equals(config('app.admin_email'), mb_strtolower($customer->Epasts)),
         ];

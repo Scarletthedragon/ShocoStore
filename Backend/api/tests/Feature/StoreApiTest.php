@@ -310,7 +310,7 @@ class StoreApiTest extends TestCase
         $product = $this->makeProduct(stock: 5);
         $customer = Customer::factory()->create(['Vards' => 'Test buyer']);
 
-        $this->actingAs($customer)->postJson('/api/orders', [
+        $this->actingAs($customer)->postJson('/api/orders', ['address' => $this->deliveryAddress(),
             'productId' => (string) $product->Prece_ID,
             'quantity' => 2,
             'customerName' => 'Spoofed buyer',
@@ -333,7 +333,7 @@ class StoreApiTest extends TestCase
     {
         $product = $this->makeProduct(stock: 1);
 
-        $this->actingAs(Customer::factory()->create())->postJson('/api/orders', [
+        $this->actingAs(Customer::factory()->create())->postJson('/api/orders', ['address' => $this->deliveryAddress(),
             'productId' => (string) $product->Prece_ID,
             'quantity' => 2,
         ])

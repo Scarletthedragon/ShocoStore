@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StoreController extends Controller
 {
@@ -146,10 +147,10 @@ class StoreController extends Controller
 
     public function storeOrder(Request $request): JsonResponse
     {
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'productId' => ['required', 'integer', 'exists:Prece,Prece_ID'],
             'quantity' => ['required', 'integer', 'min:1', 'max:10000'],
-        ]);
+        ], ShipmentController::addressRules()));
 
         $customer = $request->user();
         $order = DB::transaction(function () use ($data, $customer): ?Pasutijums {
@@ -171,6 +172,10 @@ class StoreController extends Controller
                 'Kopeja_cena' => round((float) $product->Cena * $data['quantity'], 2),
                 'Statuss' => 'gaida',
                 'Klienta_vards' => $customer->Vards,
+                'delivery_address' => $data['address'],
+                'shipment_id' => (string) Str::uuid(),
+                'unit_price' => $product->Cena,
+                'status_history' => [['status' => 'gaida', 'at' => now()->toISOString(), 'actor' => 'customer', 'action' => 'created']],
             ]);
         });
 

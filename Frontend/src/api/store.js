@@ -21,6 +21,9 @@ async function mutate(path, data, method = 'POST') {
   return request(path, { method, data, headers: { 'X-CSRF-TOKEN': token } })
 }
 export const getProducts = () => request('/products')
+export const saveAddress = address => mutate('/auth/address', { address }, 'PUT')
+export const getShipments = (admin = false) => request(admin ? '/admin/shipments' : '/shipments')
+export const updateShipment = (id, data, admin = false) => mutate(`${admin ? '/admin' : ''}/shipments/${id}`, data, 'PATCH')
 export const getUser = () => request('/auth/user')
 export const login = credentials => mutate('/auth/login', credentials)
 export const register = details => mutate('/auth/register', details)

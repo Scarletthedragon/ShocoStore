@@ -25,7 +25,7 @@ class Customer extends Authenticatable implements MustVerifyEmail
 
     protected function casts(): array
     {
-        return ['Parole' => 'hashed', 'email_verified_at' => 'datetime'];
+        return ['Parole' => 'hashed', 'email_verified_at' => 'datetime', 'delivery_address' => 'array'];
     }
 
     public function getAuthPasswordName(): string

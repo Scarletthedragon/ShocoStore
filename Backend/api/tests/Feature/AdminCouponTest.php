@@ -49,13 +49,13 @@ class AdminCouponTest extends TestCase
             ->assertOk()
             ->assertJsonPath('discountPercent', 20);
 
-        $this->actingAs($customer)->postJson('/api/checkout', [
+        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(),
             'items' => [['productId' => $product->getKey(), 'quantity' => 1]],
             'coupon' => 'summer20',
         ])->assertCreated()->assertJsonPath('total', 5.6)->assertJsonPath('discount', 1.4);
 
         $this->assertDatabaseHas('discount_coupons', ['code' => 'SUMMER20', 'usage_count' => 1]);
-        $this->postJson('/api/checkout', [
+        $this->postJson('/api/checkout', ['address' => $this->deliveryAddress(),
             'items' => [['productId' => $product->getKey(), 'quantity' => 1]],
             'coupon' => 'SUMMER20',
         ])->assertUnprocessable()->assertJsonValidationErrors('coupon');
@@ -77,7 +77,7 @@ class AdminCouponTest extends TestCase
         $customer = Customer::factory()->create();
 
         foreach ([1, 2] as $unused) {
-            $this->actingAs($customer)->postJson('/api/checkout', [
+            $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(),
                 'items' => [['productId' => $product->getKey(), 'quantity' => 1]],
                 'coupon' => 'always',
             ])->assertCreated()->assertJsonPath('discountPercent', 12.5);
@@ -122,7 +122,7 @@ class AdminCouponTest extends TestCase
         $this->getJson('/api/coupons/validate?code=BERRYONLY&productIds[]='.$products[0]->getKey())
             ->assertOk()->assertJsonPath('productIds.0', (string) $products[0]->getKey());
 
-        $this->actingAs($customer)->postJson('/api/checkout', [
+        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(),
             'items' => [
                 ['productId' => $products[0]->getKey(), 'quantity' => 1],
                 ['productId' => $products[1]->getKey(), 'quantity' => 1],

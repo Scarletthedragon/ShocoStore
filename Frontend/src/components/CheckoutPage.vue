@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ProductImage from './ProductImage.vue'
 import { checkout, validateCoupon } from '../api/store.js'
 import { user } from '../api/state.js'
 import EmailVerificationNotice from './EmailVerificationNotice.vue'
+import AddressFields from './AddressFields.vue'
 import { money } from '../data/products.js'
 
 const props = defineProps({ items: { type: Array, required: true } })
@@ -18,6 +19,9 @@ const busy = ref(false)
 const termsAccepted = ref(false)
 const termsError = ref('')
 const termsDialog = ref(null)
+const address = ref({})
+const rememberAddress = ref(true)
+watch(() => user.value?.address, value => { address.value = { recipient: user.value?.name || '', country: 'Latvija', ...value } }, { immediate: true })
 
 const subtotal = computed(() => props.items.reduce((sum, item) => sum + item.price * item.quantity, 0))
 const discount = computed(() => {
@@ -66,8 +70,11 @@ async function placeOrder() {
     const result = await checkout({
       items: props.items.map(item => ({ productId: item.id, quantity: item.quantity })),
       coupon: coupon.value?.code || null,
+      address: address.value,
+      saveAddress: rememberAddress.value,
     })
-    orderMessage.value = `Pasūtījums saglabāts! Nr. ${result.orderIds.join(', ')} · ${money(result.total)}. Statuss: gaida. Apmaksa nav veikta.`
+    if (rememberAddress.value) user.value = { ...user.value, address: { ...address.value } }
+    orderMessage.value = `Pasūtījums saglabāts! Nr. ${result.shipmentId || result.orderIds.join(', ')} · ${money(result.total)}. Gaida pārdevēja apstiprinājumu. Apmaksa nav veikta.`
     emit('clear')
     emit('ordered')
     coupon.value = null
@@ -101,7 +108,7 @@ function closeTerms() {
     <a class="checkout-back" href="#/veikals">← Turpināt iepirkšanos</a>
     <span v-if="!orderMessage" class="eyebrow">pēdējais solis līdz šokolādei</span>
     <h1>{{ orderMessage ? 'Paldies par pasūtījumu!' : 'Noformēt pasūtījumu' }} <span class="pink-text">♡</span></h1>
-    <p v-if="!orderMessage" class="checkout-intro">Pārbaudi grozu un apstiprini pasūtījumu. Tiešsaistes apmaksa un piegāde vēl nav pieejama.</p>
+    <p v-if="!orderMessage" class="checkout-intro">Pārbaudi grozu un norādi piegādes adresi. Pārdevējs apstiprinās pasūtījumu; tiešsaistes apmaksa vēl nav pieejama.</p>
 
     <p v-if="orderError" class="form-message" role="alert">{{ orderError }}</p>
 
@@ -110,11 +117,17 @@ function closeTerms() {
       <p v-if="orderMessage" class="checkout-confirmation" role="status">{{ orderMessage }}</p>
       <p v-else>Pievieno grozam šokolādi, lai varētu noformēt pasūtījumu.</p>
       <a class="button pink-button" href="#/veikals">Uz veikalu ↗</a>
+      <a v-if="orderMessage" class="button outline-button" href="#/profils">Mani pasūtījumi</a>
     </div>
 
     <div v-else class="checkout-layout">
       <section class="checkout-order" aria-labelledby="checkout-items-title">
         <h2 id="checkout-items-title">Tavs pasūtījums</h2>
+        <form v-if="user" id="delivery-checkout" @submit.prevent="placeOrder">
+          <h3>Piegādes adrese</h3>
+          <AddressFields v-model="address" :disabled="busy" prefix="checkout-delivery" />
+          <label><input v-model="rememberAddress" type="checkbox" :disabled="busy" /> Saglabāt šo adresi manā profilā</label>
+        </form>
         <ul class="checkout-items">
           <li v-for="item in items" :key="item.id">
             <ProductImage :tile="item.tile" :label="item.name" :image-url="item.imageUrl" />
@@ -164,8 +177,8 @@ function closeTerms() {
           </div>
         </div>
         <p v-if="termsError" id="checkout-terms-error" class="checkout-terms-error" role="alert">{{ termsError }}</p>
-        <button class="button pink-button checkout-submit" :disabled="busy || (user && !user.emailVerified)" @click="placeOrder">
-          {{ busy ? 'Saglabā pasūtījumu…' : user ? 'Apstiprināt pasūtījumu ↗' : 'Pieslēgties un pasūtīt ↗' }}
+        <button class="button pink-button checkout-submit" :type="user ? 'submit' : 'button'" :form="user ? 'delivery-checkout' : undefined" :disabled="busy || (user && !user.emailVerified)" @click="!user && placeOrder()">
+          {{ busy ? 'Saglabā pasūtījumu…' : user ? 'Iesniegt pasūtījumu ↗' : 'Pieslēgties un pasūtīt ↗' }}
         </button>
         <p class="checkout-payment-note">Pasūtījums tiks saglabāts veikalā. Tiešsaistes apmaksa netiek veikta.</p>
       </aside>
@@ -197,7 +210,7 @@ function closeTerms() {
         </section>
         <section>
           <h3>5. Apmaksa un piegāde</h3>
-          <p>Šobrīd vietnē nav pieejama tiešsaistes apmaksa vai piegādes noformēšana. Pasūtījuma saglabāšana nav uzskatāma par apmaksu un neapstiprina preču piegādi.</p>
+          <p>Pasūtījumam pievieno saņēmēju, tālruni un piegādes adresi. Pārdevējs apstiprina pasūtījumu un atjaunina sūtījuma statusu. Tiešsaistes apmaksa nav pieejama; pasūtījuma saglabāšana nav uzskatāma par apmaksu.</p>
         </section>
         <section>
           <h3>6. Lietotāja konts</h3>

@@ -8,6 +8,7 @@ use App\Models\Prece;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -18,12 +19,13 @@ class CouponController extends Controller
         $request->merge([
             'coupon' => mb_strtoupper(trim((string) $request->input('coupon', ''))),
         ]);
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'items' => ['required', 'array', 'min:1', 'max:100'],
             'items.*.productId' => ['required', 'integer', 'distinct', 'exists:Prece,Prece_ID'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
             'coupon' => ['nullable', 'string', 'alpha_dash:ascii', 'max:64', Rule::exists('discount_coupons', 'code')],
-        ]);
+            'saveAddress' => ['sometimes', 'boolean'],
+        ], ShipmentController::addressRules()));
 
         $result = DB::transaction(function () use ($data, $request): array {
             $coupon = null;
@@ -61,6 +63,11 @@ class CouponController extends Controller
             $subtotal = 0;
             $total = 0;
             $ids = [];
+            $shipmentId = (string) Str::uuid();
+            if ($data['saveAddress'] ?? false) {
+                $request->user()->delivery_address = $data['address'];
+                $request->user()->save();
+            }
             $discountPercent = $coupon ? (float) $coupon->discount_percent : 0;
             $eligibleProductIds = $coupon?->products->pluck('Prece_ID')->map(fn ($id) => (int) $id)->all() ?? [];
             $eligibleItemCount = 0;
@@ -80,6 +87,10 @@ class CouponController extends Controller
                     'Kopeja_cena' => $finalCents / 100,
                     'Statuss' => 'gaida',
                     'Klienta_vards' => $request->user()->Vards,
+                    'shipment_id' => $shipmentId,
+                    'delivery_address' => $data['address'],
+                    'unit_price' => $finalCents / 100 / $item['quantity'],
+                    'status_history' => [['status' => 'gaida', 'at' => now()->toISOString(), 'actor' => 'customer', 'action' => 'created']],
                 ]);
                 $ids[] = (string) $order->getKey();
                 $subtotal += $lineCents;
@@ -101,6 +112,7 @@ class CouponController extends Controller
 
             return [
                 'orderIds' => $ids,
+                'shipmentId' => $shipmentId,
                 'subtotal' => $subtotal / 100,
                 'discount' => ($subtotal - $total) / 100,
                 'discountPercent' => $discountPercent,

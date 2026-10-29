@@ -3,6 +3,8 @@ import { computed, ref, watch } from 'vue'
 import { user } from '../api/state.js'
 import { deleteAccount, updateProfile } from '../api/store.js'
 import EmailVerificationNotice from './EmailVerificationNotice.vue'
+import DeliveryAddress from './DeliveryAddress.vue'
+import OrdersPanel from './OrdersPanel.vue'
 
 defineEmits(['login'])
 const name = ref('')
@@ -92,6 +94,8 @@ async function save() {
           </form>
         </section>
       </div>
+      <DeliveryAddress />
+      <OrdersPanel />
       <section class="profile-editor profile-danger" aria-labelledby="delete-account-title">
         <h2 id="delete-account-title">Dzēst kontu</h2>
         <p>Konts tiks neatgriezeniski dzēsts, un tu tiksi izrakstīts. Esošie pasūtījumu ieraksti tiks saglabāti bez tava vārda un saites uz kontu.</p>
