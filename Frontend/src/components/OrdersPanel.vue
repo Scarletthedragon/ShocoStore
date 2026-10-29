@@ -71,11 +71,10 @@ onMounted(load)
       </form>
       <div v-else class="order-actions">
         <button v-if="canEdit(order)" class="button outline-button" :disabled="busy" @click="startEdit(order)">Mainīt pasūtījumu</button>
-        <form v-if="admin && transitions[order.status]?.length" class="order-status-form" @submit.prevent="change(order, { status: selectedStatuses[order.id] })">
+        <form v-if="admin" class="order-status-form" @submit.prevent="change(order, { status: selectedStatuses[order.id] })">
           <label :for="`status-${order.id}`">Pasūtījuma statuss</label>
           <select :id="`status-${order.id}`" v-model="selectedStatuses[order.id]" :disabled="busy || loading">
-            <option :value="order.status">{{ labels[order.status] || order.status }}</option>
-            <option v-for="status in transitions[order.status]" :key="status" :value="status">{{ labels[status] }}</option>
+            <option v-for="(label, status) in labels" :key="status" :value="status" :disabled="status !== order.status && !(transitions[order.status] || []).includes(status)">{{ label }}</option>
           </select>
           <button class="button pink-button" type="submit" :disabled="busy || loading || selectedStatuses[order.id] === order.status">Saglabāt statusu</button>
         </form>
