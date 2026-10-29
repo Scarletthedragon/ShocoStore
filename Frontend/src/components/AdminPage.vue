@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { createAdminCoupon, deleteProduct, getAdminCoupons, getProducts, revokeAdminCoupon, saveProduct, updateProduct, uploadProductImage } from '../api/store.js'
 import ProductImage from './ProductImage.vue'
 import { prepareProductImage } from '../api/product-image.js'
@@ -18,6 +18,25 @@ const editingProductId = ref(null)
 const selectedImagePreview = ref('')
 const imagePreparing = ref(false)
 let imageSelection = 0
+const activeSection = ref('products')
+const editorVisible = ref(false)
+const productQuery = ref('')
+const filteredProducts = computed(() => products.value.filter(product => product.name.toLocaleLowerCase('lv').includes(productQuery.value.trim().toLocaleLowerCase('lv'))))
+const totalStock = computed(() => products.value.reduce((total, product) => total + Number(product.stock), 0))
+const activeCouponCount = computed(() => coupons.value.filter(coupon => couponStatus(coupon) === 'Aktīvs').length)
+
+async function focusEditor() {
+  editorVisible.value = true
+  await nextTick()
+  document.getElementById('product-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  document.getElementById('product-name')?.focus({ preventScroll: true })
+}
+
+function startNewProduct() {
+  cancelProductEdit()
+  message.value = ''
+  focusEditor()
+}
 
 const sortedCoupons = computed(() => [...coupons.value].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)))
 
@@ -104,7 +123,7 @@ const visualOptions = [
 
 function generateCode() {
   const random = crypto.getRandomValues(new Uint8Array(4))
-  form.value.code = `CHOCO${Array.from(random, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()}`
+  couponForm.value.code = `CHOCO${Array.from(random, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()}`
 }
 
 async function loadCoupons() {
@@ -145,6 +164,7 @@ async function createCoupon() {
 }
 
 function editProduct(product) {
+  focusEditor()
   imageSelection++; imagePreparing.value = false; productError.value = ''
   editingProductId.value = product.id
   productForm.value = {
@@ -170,6 +190,7 @@ function editProduct(product) {
 }
 
 function cancelProductEdit() {
+  editorVisible.value = false
   imageSelection++; imagePreparing.value = false; productError.value = ''
   clearImagePreview()
   editingProductId.value = null
@@ -287,16 +308,25 @@ onBeforeUnmount(clearImagePreview)
 <template>
   <main class="admin-page content-width">
     <span class="eyebrow">ShocoStore · pārvaldība</span>
-    <h1>Atlaižu kodi <span class="pink-text">✦</span></h1>
-    <p class="admin-intro">Izveido kodu ar procentu atlaidi, lietojumu skaitu un derīguma termiņu.</p>
+    <h1>Veikala pārvaldība <span class="pink-text">✦</span></h1>
+    <p class="admin-intro">Pārvaldi šokolādes, produktu informāciju un atlaižu kodus vienuviet.</p>
+    <div class="admin-overview">
+      <div><span>Šokolādes</span><strong>{{ products.length }}</strong></div>
+      <div><span>Vienības noliktavā</span><strong>{{ totalStock }}</strong></div>
+      <div><span>Aktīvie atlaižu kodi</span><strong>{{ activeCouponCount }}</strong></div>
+    </div>
+    <nav class="admin-sections" aria-label="Pārvaldības sadaļas">
+      <button type="button" :aria-pressed="activeSection === 'products'" @click="activeSection = 'products'">Šokolādes <span>{{ products.length }}</span></button>
+      <button type="button" :aria-pressed="activeSection === 'coupons'" @click="activeSection = 'coupons'">Atlaižu kodi <span>{{ coupons.length }}</span></button>
+    </nav>
 
     <p v-if="error" class="form-message" role="alert">{{ error }}</p>
     <p v-if="message" class="form-message" role="status">{{ message }}</p>
 
-    <section class="admin-coupon-form" aria-labelledby="products-admin-title">
-      <h2 id="products-admin-title">Šokolādes</h2>
-      <p class="admin-section-intro">Pievieno jaunu šokolādi vai atjaunini tās informāciju un attēlu.</p>
-      <form class="admin-product-form" @submit.prevent="saveChocolate">
+    <section v-show="activeSection === 'products'" class="admin-coupon-form admin-products-panel" aria-labelledby="products-admin-title">
+      <div class="admin-panel-heading"><div><h2 id="products-admin-title">Šokolādes</h2><p class="admin-section-intro">Produkti, cenas un atlikumi.</p></div><button class="button pink-button" type="button" :disabled="busy || imagePreparing" @click="startNewProduct">+ Pievienot šokolādi</button></div>
+      <label class="admin-search">Meklēt šokolādi<input v-model="productQuery" type="search" placeholder="Ievadi nosaukumu…" /></label>
+      <form v-if="editorVisible" id="product-editor" class="admin-product-form" @submit.prevent="saveChocolate">
         <h3>{{ editingProductId ? 'Atjaunināt šokolādi' : 'Pievienot šokolādi' }}</h3>
         <div class="admin-form-grid">
           <div><label for="product-name">Nosaukums</label><input id="product-name" v-model="productForm.name" required maxlength="100" /></div>
@@ -339,15 +369,16 @@ onBeforeUnmount(clearImagePreview)
         </fieldset>
         <div class="admin-form-actions">
           <button class="button pink-button" type="submit" :disabled="busy || imagePreparing">{{ imagePreparing ? 'Sagatavo attēlu…' : busy ? 'Saglabā…' : editingProductId ? 'Atjaunināt šokolādi' : 'Pievienot šokolādi' }}</button>
-          <button v-if="editingProductId" class="button outline-button" type="button" :disabled="busy" @click="cancelProductEdit">Atcelt</button>
+          <button class="button outline-button" type="button" :disabled="busy" @click="cancelProductEdit">Atcelt</button>
         </div>
         <p v-if="productError" class="form-message" role="alert">{{ productError }}</p>
       </form>
 
       <p v-if="loading" role="status">Ielādē šokolādes…</p>
       <p v-else-if="!products.length">Šokolāžu vēl nav.</p>
+      <p v-else-if="!filteredProducts.length" class="admin-empty">Nekas netika atrasts. Izmēģini citu nosaukumu.</p>
       <ul v-else class="admin-product-list">
-        <li v-for="product in products" :key="product.id">
+        <li v-for="product in filteredProducts" :key="product.id">
           <ProductImage class="admin-product-thumbnail" :tile="product.tile" :label="product.name" :image-url="product.imageUrl" />
           <div><strong>{{ product.name }}</strong><span>{{ product.price.toFixed(2) }} € · atlikums {{ product.stock }} · {{ product.tag || 'Bez birkas' }}</span></div>
           <div class="admin-product-actions">
@@ -358,6 +389,7 @@ onBeforeUnmount(clearImagePreview)
       </ul>
     </section>
 
+    <div v-show="activeSection === 'coupons'" class="admin-coupons-layout">
     <form class="admin-coupon-form" @submit.prevent="createCoupon">
       <h2>Jauns atlaižu kods</h2>
       <label for="coupon-code">Kods</label>
@@ -414,10 +446,46 @@ onBeforeUnmount(clearImagePreview)
         </table>
       </div>
     </section>
+    </div>
   </main>
 </template>
 
 <style scoped>
+.admin-page{padding-top:36px}
+.admin-page>h1{font-size:clamp(30px,4vw,44px);letter-spacing:-1px}
+.admin-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:28px 0}
+.admin-overview>div{display:grid;gap:12px;padding:22px;border:1px solid var(--theme-border);border-radius:18px;background:var(--surface)}
+.admin-overview span{font-size:13px;color:var(--muted)}
+.admin-overview strong{font-family:'Outfit',sans-serif;font-size:32px;line-height:1}
+.admin-sections{display:flex;gap:8px;border-bottom:1px solid var(--theme-border);padding-bottom:14px;margin-bottom:24px}
+.admin-sections button{display:flex;align-items:center;gap:10px;padding:12px 18px;border:1px solid var(--theme-border);border-radius:30px;background:var(--surface);color:var(--page-text);font-weight:600;font-size:14px}
+.admin-sections button[aria-pressed=true]{background:var(--brown);color:var(--cream)}
+.admin-sections span{font-size:11px;opacity:.75}
+.admin-page .admin-coupon-form,.admin-page .admin-coupon-list{margin-top:0;padding:24px;border:1px solid var(--theme-border);border-radius:20px;background:var(--surface);color:var(--page-text)}
+.admin-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.admin-panel-heading h2{margin-bottom:6px}
+.admin-page .admin-section-intro{color:var(--muted);font-size:13px}
+.admin-search{display:grid;gap:8px;margin:12px 0;font-size:13px;font-weight:600;max-width:400px}
+.admin-page :is(input:not([type=checkbox]):not([type=file]),select,textarea){width:100%;padding:12px;border:1px solid var(--theme-border);border-radius:10px;background:var(--page-bg);color:var(--page-text);font-size:14px}
+.admin-page label{line-height:1.5}
+.admin-page .admin-product-form{margin:10px 0 24px;padding:24px;border:1px solid var(--theme-border);border-radius:16px;scroll-margin-top:24px}
+.admin-product-form>h3{font-size:24px;margin-bottom:20px}
+.admin-page .admin-form-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.admin-page .admin-product-list{margin-top:0}
+.admin-page .admin-product-list li{padding:18px 0;border-color:var(--theme-border)}
+.admin-page .admin-product-list li>div span{color:var(--muted);line-height:1.6}
+.admin-page .admin-product-actions .button{font-size:12px;min-height:40px;padding:9px 13px}
+.admin-page .admin-form-actions{margin-top:20px;padding-top:18px;border-top:1px solid var(--theme-border)}
+.admin-coupons-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:24px;align-items:start}
+.admin-coupons-layout .admin-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.admin-expiration{grid-column:1/-1}
+.admin-coupons-layout .admin-coupon-products{max-height:260px;overflow:auto;background:var(--page-bg);border-color:var(--theme-border)}
+.admin-coupons-layout .admin-coupon-products label{flex-basis:100%;padding:4px 0}
+.admin-coupons-layout .admin-coupon-products>p{color:var(--muted)}
+.admin-empty{padding:24px 0;color:var(--muted)}
+.admin-page>.form-message{margin-bottom:20px}
+@media(max-width:1000px){.admin-coupons-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.admin-overview{gap:8px}.admin-overview>div{padding:14px}.admin-overview span{font-size:11px}.admin-overview strong{font-size:26px}.admin-page .admin-coupon-form,.admin-page .admin-coupon-list{padding:16px}.admin-page .admin-product-form{padding:14px}.admin-page .admin-form-grid{grid-template-columns:minmax(0,1fr)}.admin-sections button{padding:10px 14px}.admin-panel-heading>.button{width:100%}.admin-search{max-width:none}}
 .admin-nutrition{margin:18px 0;padding:18px;border:1px solid var(--theme-border);border-radius:14px;min-width:0}
 .admin-nutrition legend{font-weight:700;padding-inline:8px}
 .admin-nutrition .admin-nutrition-toggle{display:flex;align-items:center;gap:10px;margin-bottom:16px}
