@@ -54,7 +54,7 @@ function minimumExpiration() {
 }
 
 function blankProduct() {
-  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tag: '', image: null, currentImageUrl: '', nutritionEnabled: false, nutrition: blankNutrition(), details: blankDetails() }
+  return { name: '', price: 0, stock: 0, description: '', tone: 'berry', tile: 0, tag: '', image: null, currentImageUrl: '', nutritionEnabled: false, nutrition: blankNutrition(), details: blankDetails() }
 }
 
 function blankDetails() {
@@ -104,23 +104,6 @@ async function selectProductImage(event) {
     if (selection === imageSelection) imagePreparing.value = false
   }
 }
-
-function tileForTone(tone) {
-  const index = visualOptions.findIndex(([id]) => id === tone)
-  return index === -1 ? 8 : index
-}
-
-const visualOptions = [
-  ['berry', 'Ogu rozā'],
-  ['salt', 'Tumši violeta'],
-  ['matcha', 'Matcha zaļa'],
-  ['caramel', 'Karamele'],
-  ['mint', 'Piparmētru zaļa'],
-  ['raspberry', 'Avenes'],
-  ['hazelnut', 'Lazdu rieksti'],
-  ['mango', 'Mango'],
-  ['original', 'Klasiskā'],
-]
 
 function generateCode() {
   const random = crypto.getRandomValues(new Uint8Array(4))
@@ -303,7 +286,10 @@ function couponStatus(coupon) {
 }
 
 onMounted(loadCoupons)
-onBeforeUnmount(clearImagePreview)
+onBeforeUnmount(() => {
+  imageSelection++
+  clearImagePreview()
+})
 </script>
 
 <template>
@@ -338,7 +324,7 @@ onBeforeUnmount(clearImagePreview)
           <div class="admin-image-field">
             <span class="admin-image-label">Šokolādes attēls</span>
             <label class="admin-image-picker" for="product-image" :aria-label="`Pievienot vai mainīt attēlu: ${productForm.name || 'šokolāde'}`">
-              <ProductImage class="admin-product-preview-image" :tile="tileForTone(productForm.tone)" :label="`Attēla priekšskatījums: ${productForm.name || 'šokolāde'}`" :image-url="selectedImagePreview || productForm.currentImageUrl" />
+              <ProductImage class="admin-product-preview-image" :tile="productForm.tile" :label="`Attēla priekšskatījums: ${productForm.name || 'šokolāde'}`" :image-url="selectedImagePreview || productForm.currentImageUrl" />
               <span>{{ selectedImagePreview ? 'Mainīt attēlu' : productForm.currentImageUrl ? 'Nomainīt attēlu' : 'Pievienot attēlu' }}</span>
             </label>
             <input id="product-image" class="admin-image-input" type="file" :disabled="busy || imagePreparing" accept="image/jpeg,image/png,image/webp" @change="selectProductImage" />

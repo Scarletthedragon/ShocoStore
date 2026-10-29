@@ -1,15 +1,15 @@
 ﻿import axios from 'axios'
+const statusMessages = {
+  401: 'Sesija ir beigusies. Pieslēdzies vēlreiz.',
+  403: 'Šī darbība nav atļauta šim kontam. Pārbaudi piekļuvi un e-pasta apstiprinājumu.',
+  413: 'Augšupielāde pārsniedz servera atļauto izmēru. Izvēlies mazāku attēlu.',
+  419: 'Sesija ir beigusies. Pārlādē lapu un pieslēdzies vēlreiz.',
+}
 const api = axios.create({ baseURL: '/api', headers: { Accept: 'application/json' }, withCredentials: true, timeout: 15000 })
 async function request(path, options = {}) {
   try { return (await api.request({ url: path, ...options })).data }
   catch (cause) {
     const data = cause.response?.data
-    const statusMessages = {
-      401: 'Sesija ir beigusies. Pieslēdzies vēlreiz.',
-      403: 'Nav piekļuves. Pieslēdzies ar administratora kontu un pārbaudi, vai e-pasts ir apstiprināts.',
-      413: 'Augšupielāde pārsniedz servera atļauto izmēru. Izvēlies mazāku attēlu.',
-      419: 'Sesija ir beigusies. Pārlādē lapu un pieslēdzies vēlreiz.',
-    }
     const message = data?.errors ? Object.values(data.errors).flat().join(' ') : statusMessages[cause.response?.status] || data?.error || data?.message || 'Neizdevās savienoties ar veikalu. Mēģini vēlreiz.'
     const error = new Error(message)
     error.status = cause.response?.status
@@ -36,19 +36,16 @@ export const validateCoupon = (code, productIds) => request('/coupons/validate',
 export const getAdminCoupons = () => request('/admin/coupons')
 export const createAdminCoupon = coupon => mutate('/admin/coupons', coupon)
 export const revokeAdminCoupon = id => mutate(`/admin/coupons/${id}`, undefined, 'DELETE')
-function productFormData(product) {
-  const data = new FormData()
-  for (const [key, value] of Object.entries(product)) {
-    if (key === 'nutrition' || key === 'details') continue
-    if (value !== undefined && value !== null) data.append(key, value)
-  }
-  data.append('imageSelected', product.image ? '1' : '0')
-  return data
-}
 export const saveProduct = product => mutate('/products', product)
 export const updateProduct = (id, product) => mutate(`/products/${id}`, product, 'PUT')
 export async function uploadProductImage(id, product, image) {
-  const data = productFormData({ ...product, image })
+  const data = new FormData()
+  for (const key of ['name', 'price', 'stock', 'description', 'tone', 'tag']) {
+    const value = product[key]
+    if (value !== undefined && value !== null) data.append(key, value)
+  }
+  data.append('image', image)
+  data.append('imageSelected', '1')
   data.append('_method', 'PUT')
   return mutate(`/products/${id}`, data)
 }

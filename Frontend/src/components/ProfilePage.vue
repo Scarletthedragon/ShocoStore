@@ -44,7 +44,7 @@ function reset() {
   error.value = ''
   success.value = ''
 }
-watch(user, reset, { immediate: true, flush: 'sync' })
+watch([() => user.value?.id, () => user.value?.name, () => user.value?.email], reset, { immediate: true, flush: 'sync' })
 watch([name, email], () => { success.value = ''; error.value = '' }, { flush: 'sync' })
 async function save() {
   if (busy.value || deleting.value || !changed.value) return

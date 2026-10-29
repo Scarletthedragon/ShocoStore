@@ -12,12 +12,13 @@ const labels = { gaida: 'Gaida apstiprinājumu', apstiprinats: 'Apstiprināts', 
 const transitions = { gaida: ['apstiprinats', 'atcelts'], apstiprinats: ['sagatavo', 'atcelts'], sagatavo: ['nosutits', 'atcelts'], nosutits: ['piegadats'], piegadats: [], atcelts: [] }
 const visibleOrders = computed(() => orders.value.filter(order => !filter.value || order.status === filter.value))
 async function load() {
-  loading.value = true; error.value = ''
+  loading.value = true; error.value = ''; message.value = ''
   try {
     orders.value = await getShipments(props.admin)
     selectedStatuses.value = Object.fromEntries(orders.value.map(order => [order.id, order.status]))
+    return true
   }
-  catch (cause) { error.value = cause.message }
+  catch (cause) { error.value = cause.message; return false }
   finally { loading.value = false }
 }
 function canEdit(order) { return (props.admin ? ['gaida', 'apstiprinats', 'sagatavo'] : ['gaida']).includes(order.status) }
@@ -34,8 +35,8 @@ async function change(order, data) {
   try {
     await updateShipment(order.id, data, props.admin)
     editing.value = null
-    await load()
-    message.value = 'Pasūtījums atjaunināts.'
+    const refreshed = await load()
+    message.value = refreshed ? 'Pasūtījums atjaunināts.' : 'Izmaiņas ir saglabātas, bet sarakstu neizdevās atjaunot. Nospied “Atjaunot”.'
   } catch (cause) { error.value = cause.message }
   finally { busy.value = false }
 }
