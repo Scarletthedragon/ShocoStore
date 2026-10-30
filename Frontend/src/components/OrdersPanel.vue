@@ -71,7 +71,7 @@ onMounted(load)
         <div class="order-actions"><button class="button pink-button" :disabled="busy">Saglabāt izmaiņas</button><button class="button outline-button" type="button" :disabled="busy" @click="editing = null">Atcelt rediģēšanu</button></div>
       </form>
       <div v-else class="order-actions">
-        <button v-if="canEdit(order)" class="button outline-button" :disabled="busy" @click="startEdit(order)">Mainīt pasūtījumu</button>
+        <button v-if="canEdit(order)" class="button outline-button order-edit-button" :disabled="busy" @click="startEdit(order)">Mainīt pasūtījumu</button>
         <form v-if="admin" class="order-status-form" @submit.prevent="change(order, { status: selectedStatuses[order.id] })">
           <label :for="`status-${order.id}`">Pasūtījuma statuss</label>
           <select :id="`status-${order.id}`" v-model="selectedStatuses[order.id]" :disabled="busy || loading">
@@ -93,4 +93,5 @@ onMounted(load)
 .orders-panel :is(input,select){width:100%;padding:11px;border:1px solid var(--theme-border);border-radius:10px;background:var(--page-bg);color:var(--page-text);font:inherit}
 .order-card{border-top:1px solid var(--theme-border);padding:24px 0}.order-card ul{list-style:none;padding:0;margin:18px 0}.order-card li{display:flex;justify-content:space-between;gap:16px;padding:7px 0;font-size:14px}.order-card p{font-size:13px;line-height:1.7}.order-total{font-weight:700;text-align:right}.order-status{padding:6px 12px;background:var(--page-bg);border:1px solid var(--theme-border);border-radius:20px;font-size:12px}.order-address{margin:12px 0;overflow-wrap:anywhere}.order-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.order-history{margin:12px 0;font-size:13px}.order-history summary{cursor:pointer}.order-quantity{display:grid;grid-template-columns:minmax(0,1fr) 90px;gap:16px;align-items:center;margin:12px 0}.orders-panel .form-message{margin:14px 0}
 @media(max-width:560px){.orders-panel{padding:16px}.order-actions .button{width:100%}}
+.order-actions .order-edit-button{align-self:center;width:auto;flex:0 0 auto;padding:9px 14px;font-size:12px;line-height:1.3}
 </style>
