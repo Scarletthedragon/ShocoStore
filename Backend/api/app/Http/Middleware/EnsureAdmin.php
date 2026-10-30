@@ -13,7 +13,7 @@ class EnsureAdmin
         $adminEmail = config('app.admin_email');
 
         abort_unless(
-            $request->user()->hasVerifiedEmail() && is_string($adminEmail) && $adminEmail !== '' && hash_equals($adminEmail, mb_strtolower($request->user()->Epasts)),
+            is_string($adminEmail) && $adminEmail !== '' && hash_equals($adminEmail, mb_strtolower($request->user()->Epasts)),
             403,
             'Admin access is not configured for this account.',
         );

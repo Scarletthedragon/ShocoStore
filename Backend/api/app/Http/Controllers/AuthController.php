@@ -4,16 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Pasutijums;
-use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class AuthController extends Controller
 {
@@ -30,9 +27,7 @@ class AuthController extends Controller
         Auth::login($customer);
         $request->session()->regenerate();
 
-        $verificationSent = $this->sendVerification($customer);
-
-        return response()->json(['user' => $this->payload($customer), 'verificationSent' => $verificationSent], 201);
+        return response()->json(['user' => $this->payload($customer)], 201);
     }
 
     public function login(Request $request): JsonResponse
@@ -71,16 +66,11 @@ class AuthController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', Rule::unique('Lietotajs', 'Epasts')->ignore($customer->getKey(), $customer->getKeyName())],
         ]);
-        $emailChanged = $customer->Epasts !== $data['email'];
         $customer->fill(['Vards' => $data['name'], 'Epasts' => $data['email']]);
-        if ($emailChanged) {
-            $customer->email_verified_at = null;
-        }
         $customer->save();
 
         return response()->json([
             'user' => $this->payload($customer),
-            'verificationSent' => $emailChanged ? $this->sendVerification($customer) : null,
         ]);
     }
 
@@ -109,53 +99,14 @@ class AuthController extends Controller
         return response()->json(['user' => null]);
     }
 
-    public function verifyEmail(Request $request, string $id, string $hash): RedirectResponse
-    {
-        $customer = Customer::query()->findOrFail($id);
-        abort_unless(hash_equals(sha1($customer->getEmailForVerification()), $hash), 403);
-        if (! $customer->hasVerifiedEmail() && $customer->markEmailAsVerified()) {
-            event(new Verified($customer));
-        }
-
-        return redirect()->away(rtrim(config('app.frontend_url'), '/').'/#/profils');
-    }
-
-    public function resendVerification(Request $request): JsonResponse
-    {
-        $customer = $request->user();
-        if ($customer->hasVerifiedEmail()) {
-            return response()->json(['user' => $this->payload($customer), 'alreadyVerified' => true]);
-        }
-
-        if (! $this->sendVerification($customer)) {
-            return response()->json(['message' => 'Neizdevās nosūtīt apstiprinājuma e-pastu. Mēģini vēlreiz vēlāk.'], 503);
-        }
-
-        return response()->json(['user' => $this->payload($customer)]);
-    }
-
-    private function sendVerification(Customer $customer): bool
-    {
-        try {
-            $customer->sendEmailVerificationNotification();
-
-            return true;
-        } catch (Throwable $exception) {
-            report($exception);
-
-            return false;
-        }
-    }
-
     private function payload(Customer $customer): array
     {
         return [
             'id' => (string) $customer->getKey(),
             'name' => $customer->Vards,
             'email' => $customer->Epasts,
-            'emailVerified' => $customer->hasVerifiedEmail(),
             'address' => $customer->delivery_address,
-            'isAdmin' => $customer->hasVerifiedEmail() && config('app.admin_email') !== ''
+            'isAdmin' => config('app.admin_email') !== ''
                 && hash_equals(config('app.admin_email'), mb_strtolower($customer->Epasts)),
         ];
     }

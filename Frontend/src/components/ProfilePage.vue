@@ -2,7 +2,6 @@
 import { computed, ref, watch } from 'vue'
 import { user } from '../api/state.js'
 import { deleteAccount, updateProfile } from '../api/store.js'
-import EmailVerificationNotice from './EmailVerificationNotice.vue'
 import DeliveryAddress from './DeliveryAddress.vue'
 import OrdersPanel from './OrdersPanel.vue'
 
@@ -52,7 +51,7 @@ async function save() {
   error.value = ''; success.value = ''
   try {
     const result = await updateProfile({ name: name.value.trim(), email: email.value.trim() })
-    user.value = { ...result.user, verificationDeliveryFailed: result.verificationSent === false }
+    user.value = result.user
     success.value = 'Tavs profils ir atjaunināts.'
   } catch (cause) { error.value = cause.message }
   finally { busy.value = false }
@@ -65,7 +64,6 @@ async function save() {
     <span class="eyebrow">Tava saldā pasaule</span>
     <h1>Mans profils <span class="pink-text">♡</span></h1>
     <template v-if="user">
-      <EmailVerificationNotice />
       <p class="profile-intro">Tava informācija vienuviet. Atjaunini to, kad nepieciešams.</p>
       <div class="profile-layout">
         <aside class="profile-summary" aria-label="Konta informācija">

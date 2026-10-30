@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Notifications\Notification;
 
-class Customer extends Authenticatable implements MustVerifyEmail
+class Customer extends Authenticatable
 {
     use HasFactory;
     use Notifiable;
@@ -31,11 +30,6 @@ class Customer extends Authenticatable implements MustVerifyEmail
     public function getAuthPasswordName(): string
     {
         return 'Parole';
-    }
-
-    public function getEmailForVerification(): string
-    {
-        return $this->Epasts;
     }
 
     public function routeNotificationForMail(?Notification $notification = null): string

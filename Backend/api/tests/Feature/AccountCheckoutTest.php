@@ -5,13 +5,9 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Pasutijums;
 use App\Models\Prece;
-use Illuminate\Auth\Notifications\VerifyEmail;
-use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\URL;
-use Mockery\MockInterface;
 use Tests\TestCase;
 
 class AccountCheckoutTest extends TestCase
@@ -26,10 +22,10 @@ class AccountCheckoutTest extends TestCase
 
     public function test_registration_hashes_password_and_starts_session(): void
     {
-        $this->postJson('/api/auth/register', ['name' => 'Buyer', 'email' => 'Buyer@example.com', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertCreated()->assertJsonPath('user.email', 'buyer@example.com')->assertJsonPath('user.emailVerified', false)->assertJsonPath('verificationSent', true)->assertJsonMissingPath('user.Parole');
+        $this->postJson('/api/auth/register', ['name' => 'Buyer', 'email' => 'Buyer@example.com', 'password' => 'password123', 'password_confirmation' => 'password123'])->assertCreated()->assertJsonPath('user.email', 'buyer@example.com')->assertJsonMissingPath('user.emailVerified')->assertJsonMissingPath('verificationSent')->assertJsonMissingPath('user.Parole');
         $customer = Customer::query()->firstOrFail();
         $this->assertTrue(Hash::check('password123', $customer->Parole));
-        Notification::assertSentTo($customer, VerifyEmail::class);
+        Notification::assertNothingSent();
         $this->assertAuthenticatedAs($customer);
         $this->getJson('/api/auth/user')->assertOk()->assertJsonPath('user.name', 'Buyer');
         $this->postJson('/api/auth/logout')->assertOk();
@@ -53,87 +49,31 @@ class AccountCheckoutTest extends TestCase
         $this->postJson('/api/auth/register', ['name' => 'Buyer', 'email' => 'buyer@example.com', 'password' => '12345678', 'password_confirmation' => '12345678'])->assertCreated();
     }
 
-    public function test_signed_email_link_verifies_the_correct_address_without_a_session(): void
+    public function test_changing_email_does_not_send_mail(): void
     {
         $customer = Customer::factory()->create(['email_verified_at' => null]);
-        $customer->sendEmailVerificationNotification();
-        $url = '';
-        Notification::assertSentTo($customer, VerifyEmail::class, function (VerifyEmail $notification) use ($customer, &$url): bool {
-            $url = $notification->toMail($customer)->actionUrl;
-
-            return $customer->routeNotificationFor('mail', $notification) === $customer->Epasts;
-        });
-        $this->get($url)->assertRedirect(rtrim(config('app.frontend_url'), '/').'/#/profils');
-        $this->assertTrue($customer->fresh()->hasVerifiedEmail());
-        $this->assertGuest();
-        $this->get($url)->assertRedirect();
-    }
-
-    public function test_verification_rejects_expired_tampered_and_wrong_email_links(): void
-    {
-        $customer = Customer::factory()->create(['email_verified_at' => null]);
-        $parameters = ['id' => $customer->getKey(), 'hash' => sha1($customer->Epasts)];
-        $expired = URL::temporarySignedRoute('verification.verify', now()->subMinute(), $parameters);
-        $this->getJson($expired)->assertForbidden();
-        $valid = URL::temporarySignedRoute('verification.verify', now()->addHour(), $parameters);
-        $this->getJson($valid.'&tampered=1')->assertForbidden();
-        $wrongEmail = URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id' => $customer->getKey(), 'hash' => sha1('other@example.com')]);
-        $this->getJson($wrongEmail)->assertForbidden();
-        $this->assertFalse($customer->fresh()->hasVerifiedEmail());
-    }
-
-    public function test_resending_verification_requires_authentication_and_is_rate_limited(): void
-    {
-        $this->postJson('/api/auth/email/resend')->assertUnauthorized();
-        $customer = Customer::factory()->create(['email_verified_at' => null]);
-        $this->actingAs($customer)->postJson('/api/auth/email/resend')->assertOk();
-        Notification::assertSentTo($customer, VerifyEmail::class);
-        $this->postJson('/api/auth/email/resend')->assertTooManyRequests();
-    }
-
-    public function test_verified_customers_do_not_receive_another_verification_email(): void
-    {
-        $this->actingAs(Customer::factory()->create())->postJson('/api/auth/email/resend')->assertOk()->assertJsonPath('alreadyVerified', true);
-        Notification::assertNothingSent();
-    }
-
-    public function test_changing_email_requires_reverification_and_invalidates_the_old_link(): void
-    {
-        $customer = Customer::factory()->create();
-        $oldUrl = URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id' => $customer->getKey(), 'hash' => sha1($customer->Epasts)]);
         $this->actingAs($customer)->postJson('/api/auth/profile', ['name' => 'Buyer', 'email' => 'updated@example.com'])
-            ->assertOk()->assertJsonPath('user.emailVerified', false)->assertJsonPath('verificationSent', true);
-        $this->assertFalse($customer->fresh()->hasVerifiedEmail());
-        Notification::assertSentTo($customer, VerifyEmail::class);
-        $this->getJson($oldUrl)->assertForbidden();
-    }
-
-    public function test_name_only_changes_keep_email_verified_and_do_not_send_mail(): void
-    {
-        $customer = Customer::factory()->create();
-        $this->actingAs($customer)->postJson('/api/auth/profile', ['name' => 'Buyer', 'email' => $customer->Epasts])
-            ->assertOk()->assertJsonPath('user.emailVerified', true);
+            ->assertOk()->assertJsonPath('user.email', 'updated@example.com')->assertJsonMissingPath('verificationSent');
         Notification::assertNothingSent();
     }
 
-    public function test_unverified_accounts_cannot_checkout_or_access_admin(): void
+    public function test_admin_access_does_not_require_email_verification(): void
     {
         config(['app.admin_email' => 'admin@example.com']);
         $customer = Customer::factory()->create(['Epasts' => 'admin@example.com', 'email_verified_at' => null]);
-        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => []])->assertForbidden();
-        $this->getJson('/api/admin/coupons')->assertForbidden();
-        $this->getJson('/api/auth/user')->assertOk()->assertJsonPath('user.isAdmin', false);
+        $this->actingAs($customer)->getJson('/api/admin/coupons')->assertOk();
+        $this->getJson('/api/auth/user')->assertOk()->assertJsonPath('user.isAdmin', true);
+        $this->actingAs(Customer::factory()->create())->getJson('/api/admin/coupons')->assertForbidden();
     }
 
-    public function test_mail_failure_does_not_lose_a_newly_registered_account(): void
+    public function test_checkout_does_not_require_email_verification(): void
     {
-        $this->mock(Dispatcher::class, function (MockInterface $mock): void {
-            $mock->shouldReceive('send')->once()->andThrow(new \RuntimeException('Mail unavailable'));
-        });
-        $this->postJson('/api/auth/register', ['name' => 'Buyer', 'email' => 'buyer@example.com', 'password' => 'password123', 'password_confirmation' => 'password123'])
-            ->assertCreated()->assertJsonPath('verificationSent', false);
-        $this->assertDatabaseCount('Lietotajs', 1);
-        $this->assertAuthenticated();
+        $this->seed();
+        $product = Prece::query()->firstOrFail();
+        $customer = Customer::factory()->create(['email_verified_at' => null]);
+        $this->actingAs($customer)->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => [['productId' => $product->getKey(), 'quantity' => 1]]])->assertCreated();
+        $this->postJson('/api/orders', ['address' => $this->deliveryAddress(), 'productId' => $product->getKey(), 'quantity' => 1])->assertCreated();
+        Notification::assertNothingSent();
     }
 
     public function test_login_checks_password(): void
@@ -180,21 +120,17 @@ class AccountCheckoutTest extends TestCase
         $this->postJson('/api/checkout', ['address' => $this->deliveryAddress(), 'items' => []])->assertUnauthorized();
     }
 
-    public function test_every_order_endpoint_blocks_guests_and_unverified_accounts_without_changing_stock(): void
+    public function test_every_order_endpoint_blocks_guests_without_changing_stock(): void
     {
         $this->seed();
         $product = Prece::query()->firstOrFail();
         $stock = $product->Atlikums;
         $payloads = [
-            '/api/orders' => ['productId' => $product->getKey(), 'quantity' => 1, 'emailVerified' => true],
-            '/api/checkout' => ['items' => [['productId' => $product->getKey(), 'quantity' => 1]], 'emailVerified' => true],
+            '/api/orders' => ['productId' => $product->getKey(), 'quantity' => 1],
+            '/api/checkout' => ['items' => [['productId' => $product->getKey(), 'quantity' => 1]]],
         ];
         foreach ($payloads as $url => $payload) {
             $this->postJson($url, $payload)->assertUnauthorized();
-        }
-        $this->actingAs(Customer::factory()->create(['email_verified_at' => null]));
-        foreach ($payloads as $url => $payload) {
-            $this->postJson($url, $payload)->assertForbidden();
         }
         $this->assertDatabaseCount('Pasutijums', 0);
         $this->assertSame($stock, $product->fresh()->Atlikums);
@@ -214,17 +150,15 @@ class AccountCheckoutTest extends TestCase
         $this->assertAuthenticatedAs($customer);
     }
 
-    public function test_unverified_customer_can_delete_account_and_cannot_log_back_in_or_use_old_verification_link(): void
+    public function test_customer_can_delete_account_and_cannot_log_back_in(): void
     {
         $customer = Customer::factory()->create(['email_verified_at' => null]);
-        $url = URL::temporarySignedRoute('verification.verify', now()->addHour(), ['id' => $customer->getKey(), 'hash' => sha1($customer->Epasts)]);
         $this->actingAs($customer)->deleteJson('/api/auth/account', ['password' => 'password123', 'confirmation' => true])
             ->assertOk()->assertJsonPath('user', null);
         $this->assertDatabaseMissing('Lietotajs', ['Lietotajs_ID' => $customer->getKey()]);
         $this->assertGuest();
         $this->getJson('/api/auth/user')->assertUnauthorized();
         $this->postJson('/api/auth/login', ['email' => $customer->Epasts, 'password' => 'password123'])->assertUnprocessable();
-        $this->getJson($url)->assertNotFound();
     }
 
     public function test_account_deletion_anonymizes_only_own_orders_and_preserves_stock(): void

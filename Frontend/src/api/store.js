@@ -1,7 +1,7 @@
 ﻿import axios from 'axios'
 const statusMessages = {
   401: 'Sesija ir beigusies. Pieslēdzies vēlreiz.',
-  403: 'Šī darbība nav atļauta šim kontam. Pārbaudi piekļuvi un e-pasta apstiprinājumu.',
+  403: 'Šī darbība nav atļauta šim kontam. Pārbaudi konta piekļuvi.',
   413: 'Augšupielāde pārsniedz servera atļauto izmēru. Izvēlies mazāku attēlu.',
   419: 'Sesija ir beigusies. Pārlādē lapu un pieslēdzies vēlreiz.',
 }
@@ -30,7 +30,6 @@ export const register = details => mutate('/auth/register', details)
 export const logout = () => mutate('/auth/logout')
 export const updateProfile = details => mutate('/auth/profile', details)
 export const deleteAccount = details => mutate('/auth/account', details, 'DELETE')
-export const resendVerification = () => mutate('/auth/email/resend')
 export const checkout = order => mutate('/checkout', order)
 export const validateCoupon = (code, productIds) => request('/coupons/validate', { params: { code, productIds } })
 export const getAdminCoupons = () => request('/admin/coupons')
